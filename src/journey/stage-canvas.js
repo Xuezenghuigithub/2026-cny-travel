@@ -216,14 +216,6 @@ export function createStageCanvas(canvas, model, store) {
     ctx.font = '600 12px "Noto Sans SC", sans-serif';
     ctx.fillText(shortStopText(day.title), x + 10, y + 33);
 
-    const tx = width - 154;
-    ctx.fillStyle = 'rgba(17, 22, 35, 0.78)';
-    ctx.fillRect(tx, y, 138, 42);
-    ctx.strokeStyle = 'rgba(124, 228, 197, 0.95)';
-    ctx.strokeRect(tx, y, 138, 42);
-    ctx.fillStyle = '#9aeacc';
-    ctx.font = '700 13px "Rajdhani", "Noto Sans SC", sans-serif';
-    ctx.fillText('CADILLAC CT4', tx + 11, y + 25);
   }
 
   function drawParticles() {

@@ -252,7 +252,7 @@ body[data-mood='return'] {
   text-align: center;
   background: rgba(26, 23, 31, 0.64);
   border: 1px solid rgba(246, 201, 142, 0.22);
-  cursor: pointer;
+  cursor: default;
 }
 
 .cabin-seat p {
@@ -282,9 +282,7 @@ body[data-mood='return'] {
   z-index: 5;
 }
 
-.cabin-seat:hover::after,
-.cabin-seat:focus-visible::after,
-.cabin-seat.is-open::after {
+.cabin-seat.is-speaking::after {
   opacity: 1;
   transform: translate(-50%, 0);
 }
@@ -778,9 +776,7 @@ body[data-mood='return'] {
     text-align: left;
   }
 
-  .cabin-seat:hover::after,
-  .cabin-seat:focus-visible::after,
-  .cabin-seat.is-open::after {
+  .cabin-seat.is-speaking::after {
     transform: translate(0, 0);
   }
 

@@ -1,4 +1,5 @@
 import './style.css';
+import bgmUrl from './static/new_year.mp3';
 import { tripPlan } from './plan.js';
 import { createJourneyModel } from './journey/model.js';
 import { createStore } from './journey/state.js';
@@ -14,7 +15,6 @@ app.innerHTML = `
       <div>
         <p class="brand">CNY ROADBOOK · ARCADE MODE</p>
         <h1>${tripPlan.title}</h1>
-        <p class="sub">${tripPlan.subtitle}</p>
       </div>
       <div class="chip-row">
         <span class="chip" id="hudDay">DAY 1</span>
@@ -44,12 +44,11 @@ app.innerHTML = `
         <section class="paper map-card">
           <p class="panel-kicker">MAP OVERVIEW</p>
           <div class="map-shell" id="miniMap" role="img" aria-label="高德地图行程总览"></div>
-          <p class="map-note" id="mapHint">地图加载中...</p>
+          <p class="map-note" id="mapHint"></p>
         </section>
 
         <section class="paper crew-card">
           <div class="crew-head">
-            <p class="panel-kicker">CREW</p>
             <span id="hudFuel">油量 100%</span>
             <span id="hudFatigue">疲劳 10%</span>
           </div>
@@ -135,117 +134,60 @@ function initCrewCatchphrases() {
     'seat-rear-right': 'This is fucking ***.'
   };
 
-  document.querySelectorAll('.cabin-seat').forEach((seat) => {
+  const seats = [...document.querySelectorAll('.cabin-seat')];
+
+  seats.forEach((seat) => {
     const key = Object.keys(phrases).find((cls) => seat.classList.contains(cls));
     if (!key) return;
     seat.dataset.catchphrase = phrases[key];
-    seat.setAttribute('tabindex', '0');
-    seat.addEventListener('click', () => {
-      const isOpen = seat.classList.contains('is-open');
-      document.querySelectorAll('.cabin-seat.is-open').forEach((el) => el.classList.remove('is-open'));
-      if (!isOpen) seat.classList.add('is-open');
-    });
+    seat.classList.remove('is-open');
   });
 
-  document.addEventListener('click', (event) => {
-    if (!event.target.closest('.cabin-seat')) {
-      document.querySelectorAll('.cabin-seat.is-open').forEach((el) => el.classList.remove('is-open'));
-    }
+  function speakRandomly(seat) {
+    const nextDelay = 2200 + Math.random() * 4800;
+    window.setTimeout(() => {
+      seat.classList.add('is-speaking');
+      window.setTimeout(() => {
+        seat.classList.remove('is-speaking');
+      }, 1800 + Math.random() * 1400);
+      speakRandomly(seat);
+    }, nextDelay);
+  }
+
+  seats.forEach((seat, idx) => {
+    window.setTimeout(() => speakRandomly(seat), 500 + idx * 460);
   });
 }
 
 function initAmbientMusic() {
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) {
-    const musicBtn = document.getElementById('musicBtn');
-    if (musicBtn) {
-      musicBtn.textContent = '音乐: 不支持';
-      musicBtn.disabled = true;
-    }
-    return;
-  }
-
   const musicBtn = document.getElementById('musicBtn');
-  let context = null;
-  let master = null;
-  let started = false;
-  let enabled = true;
-  let timerId = 0;
+  const audio = new Audio(bgmUrl);
+  audio.loop = true;
+  audio.preload = 'auto';
+  audio.volume = 0.38;
+  audio.playsInline = true;
 
-  const notes = [220, 247, 294, 330, 392, 330, 294, 247];
-  const harmony = [330, 370, 440, 494, 587, 494, 440, 370];
-  let step = 0;
+  let enabled = true;
+  let isPlaying = false;
 
   function setMusicButton(status) {
     if (!musicBtn) return;
     musicBtn.textContent = status;
-    musicBtn.classList.toggle('is-active', started && enabled);
-  }
-
-  function ensureContext() {
-    if (context) return;
-    context = new AudioCtx();
-    master = context.createGain();
-    master.gain.value = 0.075;
-    master.connect(context.destination);
-  }
-
-  function playNote(freq, when) {
-    if (!context || !master) return;
-    const osc = context.createOscillator();
-    const gain = context.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.exponentialRampToValueAtTime(0.06, when + 0.06);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.42);
-
-    osc.connect(gain);
-    gain.connect(master);
-    osc.start(when);
-    osc.stop(when + 0.45);
-  }
-
-  function startLoop() {
-    if (timerId) return;
-    setMusicButton('音乐: 播放中');
-    timerId = window.setInterval(() => {
-      if (!context || context.state !== 'running' || !enabled) return;
-      const when = context.currentTime + 0.01;
-      const freq = notes[step % notes.length];
-      playNote(freq, when);
-      playNote(harmony[step % harmony.length], when + 0.04);
-      if (step % 4 === 0) playNote(freq / 2, when + 0.06);
-      step += 1;
-    }, 460);
-  }
-
-  function stopLoop() {
-    if (timerId) {
-      window.clearInterval(timerId);
-      timerId = 0;
-    }
+    musicBtn.classList.toggle('is-active', enabled && isPlaying);
   }
 
   async function tryStart(removeListenersOnSuccess = false) {
     try {
-      ensureContext();
-      if (!context) return false;
-      if (context.state !== 'running') {
-        await context.resume();
-      }
-      if (context.state !== 'running') {
-        setMusicButton('音乐: 点击启用');
-        return false;
-      }
-      started = true;
-      startLoop();
+      if (!enabled) return false;
+      await audio.play();
+      isPlaying = true;
+      setMusicButton('音乐: 播放中');
       if (removeListenersOnSuccess) {
         detachResumeListeners();
       }
       return true;
     } catch (_error) {
+      isPlaying = false;
       setMusicButton('音乐: 点击启用');
       return false;
     }
@@ -277,16 +219,27 @@ function initAmbientMusic() {
         return;
       }
 
-      if (!started) {
+      if (!isPlaying) {
         await tryStart();
         return;
       }
 
       enabled = false;
-      stopLoop();
+      audio.pause();
+      isPlaying = false;
       setMusicButton('音乐: 已关闭');
     });
   }
+
+  audio.addEventListener('playing', () => {
+    isPlaying = true;
+    if (enabled) setMusicButton('音乐: 播放中');
+  });
+  audio.addEventListener('pause', () => {
+    if (!enabled) return;
+    isPlaying = false;
+    setMusicButton('音乐: 点击启用');
+  });
 
   setMusicButton('音乐: 启用中');
   tryStart();
@@ -308,6 +261,35 @@ function getRoutePosition(route, t) {
   const a = route[i];
   const b = route[i + 1];
   return [a[0] + (b[0] - a[0]) * frac, a[1] + (b[1] - a[1]) * frac];
+}
+
+function initAutoPlayGuard(engine, store) {
+  let lastKm = store.getState().km;
+
+  const timer = window.setInterval(() => {
+    const state = store.getState();
+    const kmDelta = Math.abs(state.km - lastKm);
+
+    if (state.mode === 'driving' && kmDelta < 0.08) {
+      engine.setAuto(true);
+    }
+
+    lastKm = state.km;
+  }, 2200);
+
+  const resumeOnVisible = () => {
+    if (document.visibilityState === 'visible') {
+      engine.setAuto(true);
+    }
+  };
+
+  window.addEventListener('visibilitychange', resumeOnVisible);
+  window.addEventListener('pageshow', () => engine.setAuto(true));
+
+  return () => {
+    clearInterval(timer);
+    window.removeEventListener('visibilitychange', resumeOnVisible);
+  };
 }
 
 async function loadAmap() {
@@ -507,4 +489,6 @@ createPanelRenderer({ model, store, engine });
 initCrewCatchphrases();
 initMiniMap(store);
 initAmbientMusic();
+engine.setAuto(true);
+initAutoPlayGuard(engine, store);
 engine.start();
