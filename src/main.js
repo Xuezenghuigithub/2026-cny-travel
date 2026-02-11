@@ -130,7 +130,7 @@ function toLngLat([lat, lng]) {
 function initCrewCatchphrases() {
   const phrases = {
     'seat-driver': '不用不用，我还能开',
-    'seat-passenger': '哈哈哈',
+    'seat-passenger': '不知丢走不走线',
     'seat-rear-left': '你们看，我都行',
     'seat-rear-right': 'This is fucking 福建.'
   };
