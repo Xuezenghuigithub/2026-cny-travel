@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
