@@ -283,7 +283,8 @@ body[data-mood='return'] {
 }
 
 .cabin-seat:hover::after,
-.cabin-seat:focus-visible::after {
+.cabin-seat:focus-visible::after,
+.cabin-seat.is-open::after {
   opacity: 1;
   transform: translate(-50%, 0);
 }
@@ -613,29 +614,211 @@ body[data-mood='return'] {
 }
 
 @media (max-width: 1040px) {
+  .arcade-shell {
+    min-height: auto;
+    padding: 0.75rem;
+    gap: 0.65rem;
+    grid-template-rows: auto auto auto;
+  }
+
+  .top-band {
+    border-radius: 14px;
+    padding: 0.72rem 0.8rem;
+    gap: 0.5rem;
+  }
+
+  .brand {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+  }
+
+  .top-band h1 {
+    font-size: clamp(1.02rem, 5.4vw, 1.28rem);
+    line-height: 1.16;
+    margin: 0.12rem 0 0;
+  }
+
+  .sub {
+    font-size: 0.8rem;
+    margin-top: 0.18rem;
+  }
+
+  .chip-row {
+    gap: 0.34rem;
+  }
+
+  .chip {
+    font-size: 0.68rem;
+    padding: 0.28rem 0.5rem;
+  }
+
   .main-grid {
     grid-template-columns: 1fr;
+    gap: 0.65rem;
   }
 
   .drive-stage {
-    height: 46svh;
+    height: 38svh;
+    min-height: 280px;
+    border-radius: 14px;
+  }
+
+  .stage-overlay {
+    top: 0.55rem;
+    left: 0.55rem;
+    right: 0.55rem;
+    gap: 0.45rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .badge {
+    justify-self: start;
+    font-size: 0.72rem;
+    padding: 0.28rem 0.5rem;
+  }
+
+  .route-progress {
+    height: 8px;
+  }
+
+  .route-pct {
+    justify-self: end;
+    font-size: 0.78rem;
+  }
+
+  .mission-panel {
+    overflow: visible;
+    gap: 0.55rem;
+    padding-right: 0;
+  }
+
+  .paper {
+    border-radius: 12px;
+    padding: 0.62rem;
+  }
+
+  .intro-card h2 {
+    font-size: 1.08rem;
+    line-height: 1.2;
+    margin: 0.22rem 0 0.12rem;
+  }
+
+  .mission-sub {
+    font-size: 0.82rem;
+  }
+
+  .panel-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
   }
 
   .paper.dual {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 
   .cabin-scene {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+    padding: 0.78rem 0.5rem 0.52rem;
   }
 
   .map-shell {
-    height: 190px;
+    height: 230px;
+  }
+
+  .timeline-item {
+    grid-template-columns: 52px 1fr;
+    gap: 0.35rem;
+    padding: 0.3rem 0.38rem;
+  }
+
+  .timeline-item .time {
+    font-size: 0.7rem;
+  }
+
+  .timeline-item .label {
+    font-size: 0.78rem;
+  }
+
+  .controls {
+    border-radius: 12px;
+    padding: 0.52rem;
+    gap: 0.42rem;
+  }
+
+  .ctl {
+    min-height: 40px;
+    flex: 1 1 calc(50% - 0.42rem);
+    font-size: 0.78rem;
+    padding: 0.45rem 0.3rem;
   }
 }
 
 @media (max-width: 760px) {
+  .top-band .sub {
+    display: none;
+  }
+
+  .chip-row .chip:last-child {
+    display: none;
+  }
+
+  .drive-stage {
+    height: 34svh;
+    min-height: 250px;
+  }
+
+  .cabin-seat::after {
+    left: 8px;
+    right: 8px;
+    bottom: calc(100% + 6px);
+    transform: translate(0, 6px);
+    white-space: normal;
+    text-align: left;
+  }
+
+  .cabin-seat:hover::after,
+  .cabin-seat:focus-visible::after,
+  .cabin-seat.is-open::after {
+    transform: translate(0, 0);
+  }
+
+  .cabin-seat p {
+    font-size: 0.66rem;
+  }
+
+  .chibi {
+    width: 58px;
+    height: 52px;
+  }
+
+  .chibi .head {
+    left: 17px;
+    top: 4px;
+  }
+
+  .chibi .body {
+    left: 13px;
+    top: 22px;
+  }
+
+  .chibi .prop {
+    left: 16px;
+    top: 28px;
+  }
+
+  .map-shell {
+    height: 210px;
+  }
+
+  .ctl {
+    min-height: 38px;
+    flex: 1 1 100%;
+  }
+
   .hint {
+    display: none;
     width: 100%;
     margin-left: 0;
   }

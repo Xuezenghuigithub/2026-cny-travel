@@ -117,6 +117,7 @@ app.innerHTML = `
       <button id="speedBtn" class="ctl">x1.0</button>
       <button id="leftBtn" class="ctl">回看 25km</button>
       <button id="rightBtn" class="ctl">前进 25km</button>
+      <button id="musicBtn" class="ctl music-btn">音乐: 启动中</button>
       <span class="hint">Space 播放/暂停 · ← → 调整进度</span>
     </footer>
   </div>
@@ -139,70 +140,161 @@ function initCrewCatchphrases() {
     if (!key) return;
     seat.dataset.catchphrase = phrases[key];
     seat.setAttribute('tabindex', '0');
+    seat.addEventListener('click', () => {
+      const isOpen = seat.classList.contains('is-open');
+      document.querySelectorAll('.cabin-seat.is-open').forEach((el) => el.classList.remove('is-open'));
+      if (!isOpen) seat.classList.add('is-open');
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.cabin-seat')) {
+      document.querySelectorAll('.cabin-seat.is-open').forEach((el) => el.classList.remove('is-open'));
+    }
   });
 }
 
 function initAmbientMusic() {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) return;
+  if (!AudioCtx) {
+    const musicBtn = document.getElementById('musicBtn');
+    if (musicBtn) {
+      musicBtn.textContent = '音乐: 不支持';
+      musicBtn.disabled = true;
+    }
+    return;
+  }
 
-  const context = new AudioCtx();
-  const master = context.createGain();
-  master.gain.value = 0.045;
-  master.connect(context.destination);
-
-  const notes = [220, 247, 294, 330, 392, 330, 294, 247];
-  let step = 0;
+  const musicBtn = document.getElementById('musicBtn');
+  let context = null;
+  let master = null;
+  let started = false;
+  let enabled = true;
   let timerId = 0;
 
+  const notes = [220, 247, 294, 330, 392, 330, 294, 247];
+  const harmony = [330, 370, 440, 494, 587, 494, 440, 370];
+  let step = 0;
+
+  function setMusicButton(status) {
+    if (!musicBtn) return;
+    musicBtn.textContent = status;
+    musicBtn.classList.toggle('is-active', started && enabled);
+  }
+
+  function ensureContext() {
+    if (context) return;
+    context = new AudioCtx();
+    master = context.createGain();
+    master.gain.value = 0.075;
+    master.connect(context.destination);
+  }
+
   function playNote(freq, when) {
+    if (!context || !master) return;
     const osc = context.createOscillator();
     const gain = context.createGain();
 
-    osc.type = 'triangle';
+    osc.type = 'sine';
     osc.frequency.value = freq;
     gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.exponentialRampToValueAtTime(0.05, when + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.06, when + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.42);
 
     osc.connect(gain);
     gain.connect(master);
     osc.start(when);
-    osc.stop(when + 0.55);
+    osc.stop(when + 0.45);
   }
 
   function startLoop() {
     if (timerId) return;
+    setMusicButton('音乐: 播放中');
     timerId = window.setInterval(() => {
+      if (!context || context.state !== 'running' || !enabled) return;
       const when = context.currentTime + 0.01;
       const freq = notes[step % notes.length];
       playNote(freq, when);
-      if (step % 4 === 0) playNote(freq / 2, when + 0.02);
+      playNote(harmony[step % harmony.length], when + 0.04);
+      if (step % 4 === 0) playNote(freq / 2, when + 0.06);
       step += 1;
     }, 460);
   }
 
-  async function tryStart() {
-    try {
-      if (context.state !== 'running') {
-        await context.resume();
-      }
-      startLoop();
-    } catch (_error) {
-      // Some browsers require interaction; fallback listeners below handle it.
+  function stopLoop() {
+    if (timerId) {
+      window.clearInterval(timerId);
+      timerId = 0;
     }
   }
 
-  tryStart();
-  const resumeOnGesture = () => {
-    tryStart();
+  async function tryStart(removeListenersOnSuccess = false) {
+    try {
+      ensureContext();
+      if (!context) return false;
+      if (context.state !== 'running') {
+        await context.resume();
+      }
+      if (context.state !== 'running') {
+        setMusicButton('音乐: 点击启用');
+        return false;
+      }
+      started = true;
+      startLoop();
+      if (removeListenersOnSuccess) {
+        detachResumeListeners();
+      }
+      return true;
+    } catch (_error) {
+      setMusicButton('音乐: 点击启用');
+      return false;
+    }
+  }
+
+  function detachResumeListeners() {
     window.removeEventListener('pointerdown', resumeOnGesture);
     window.removeEventListener('keydown', resumeOnGesture);
     window.removeEventListener('touchstart', resumeOnGesture);
+    window.removeEventListener('visibilitychange', resumeOnVisible);
+    window.removeEventListener('pageshow', resumeOnVisible);
+  }
+
+  const resumeOnGesture = () => {
+    tryStart(true);
   };
+  const resumeOnVisible = () => {
+    if (document.visibilityState === 'visible') {
+      tryStart();
+    }
+  };
+
+  if (musicBtn) {
+    musicBtn.addEventListener('click', async () => {
+      if (!enabled) {
+        enabled = true;
+        setMusicButton('音乐: 启用中');
+        await tryStart();
+        return;
+      }
+
+      if (!started) {
+        await tryStart();
+        return;
+      }
+
+      enabled = false;
+      stopLoop();
+      setMusicButton('音乐: 已关闭');
+    });
+  }
+
+  setMusicButton('音乐: 启用中');
+  tryStart();
   window.addEventListener('pointerdown', resumeOnGesture, { passive: true });
   window.addEventListener('keydown', resumeOnGesture);
   window.addEventListener('touchstart', resumeOnGesture, { passive: true });
+  window.addEventListener('visibilitychange', resumeOnVisible);
+  window.addEventListener('pageshow', resumeOnVisible);
 }
 
 function getRoutePosition(route, t) {
