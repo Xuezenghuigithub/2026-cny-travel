@@ -6,6 +6,8 @@
   --warm: #ff9f63;
   --cool: #59e3d2;
   --pink: #ff6f93;
+  --mx: 0;
+  --my: 0;
 }
 
 * {
@@ -73,6 +75,40 @@ body[data-mood='return'] {
   position: relative;
   width: 100vw;
   height: 100svh;
+}
+
+.festival-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.cursor-glow {
+  position: fixed;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  background: radial-gradient(circle, rgba(255, 185, 97, 0.2), rgba(88, 229, 216, 0.08), transparent 62%);
+  mix-blend-mode: screen;
+  filter: blur(6px);
+  transition: opacity 180ms ease;
+}
+
+.flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.16), transparent 58%);
+  opacity: 0;
+}
+
+.flash.is-on {
+  animation: flashIn 360ms ease;
 }
 
 .fx-bg {
@@ -163,7 +199,7 @@ body[data-mood='return'] {
   inset: 0;
   background-position: center;
   background-size: cover;
-  transform: scale(1.02);
+  transform: scale(1.04) translate(calc(var(--mx) * -7px), calc(var(--my) * -7px));
 }
 
 .hero-bg::after {
@@ -171,6 +207,7 @@ body[data-mood='return'] {
   position: absolute;
   inset: 0;
   background:
+    linear-gradient(180deg, rgba(8, 14, 22, 0.4), rgba(6, 9, 16, 0.54)),
     repeating-linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.03) 0,
@@ -180,8 +217,62 @@ body[data-mood='return'] {
     );
 }
 
+.lanterns {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.lanterns span {
+  width: 24px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffcc78, #ff7350);
+  box-shadow: 0 0 12px rgba(255, 148, 79, 0.7);
+  position: relative;
+  transform-origin: top center;
+  animation: sway 4s ease-in-out infinite;
+}
+
+.lanterns span::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -20px;
+  width: 1.5px;
+  height: 20px;
+  background: rgba(255, 239, 214, 0.8);
+  transform: translateX(-50%);
+}
+
+.lanterns span:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.lanterns span:nth-child(3) {
+  animation-delay: 0.9s;
+}
+
+.lanterns span:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.lanterns span:nth-child(5) {
+  animation-delay: 0.7s;
+}
+
 .hero-inner {
   text-align: center;
+  transform: translate(calc(var(--mx) * 5px), calc(var(--my) * 5px));
+}
+
+.parallax-layer-soft {
+  transform: translate(calc(var(--mx) * 8px), calc(var(--my) * 8px));
 }
 
 h1,
@@ -262,6 +353,7 @@ button {
   height: clamp(180px, 32vw, 350px);
   object-fit: cover;
   object-position: center 55%;
+  animation: carFloat 5.5s ease-in-out infinite;
 }
 
 .hint {
@@ -287,6 +379,10 @@ button {
   backdrop-filter: blur(11px);
   box-shadow: 0 20px 42px rgba(0, 0, 0, 0.3);
   padding: clamp(0.75rem, 1.9vw, 1.05rem);
+}
+
+.accent-card {
+  background: linear-gradient(135deg, rgba(255, 130, 94, 0.24), rgba(86, 226, 214, 0.18));
 }
 
 .route-map {
@@ -325,6 +421,35 @@ button {
   background: linear-gradient(120deg, rgba(255, 157, 99, 0.24), rgba(92, 224, 214, 0.15));
 }
 
+.lunar-ribbon .glyph {
+  animation: glyphPulse 1.7s ease-in-out infinite;
+}
+
+.progress-wrap {
+  margin-top: 0.72rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.progress-track {
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--warm), var(--cool));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--warm), transparent 40%);
+  animation: progressGlow 2.3s linear infinite;
+}
+
 .focus {
   margin: 0.75rem 0 0;
   color: color-mix(in srgb, var(--warm), white 22%);
@@ -346,6 +471,37 @@ ol {
 li {
   margin: 0.26rem 0;
   color: rgba(247, 246, 238, 0.96);
+}
+
+.rhythm {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  margin-top: 0.9rem;
+  height: 22px;
+}
+
+.rhythm span {
+  width: 6px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cool), var(--warm));
+  animation: beat 1.2s ease-in-out infinite;
+}
+
+.rhythm span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.rhythm span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.rhythm span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+.rhythm span:nth-child(5) {
+  animation-delay: 0.6s;
 }
 
 .day-nav {
@@ -460,6 +616,70 @@ li {
   }
 }
 
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes glyphPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes progressGlow {
+  from {
+    filter: hue-rotate(0deg);
+  }
+
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    height: 20%;
+  }
+
+  50% {
+    height: 100%;
+  }
+}
+
+@keyframes carFloat {
+  0%,
+  100% {
+    transform: scale(1.02) translateY(0);
+  }
+
+  50% {
+    transform: scale(1.05) translateY(-6px);
+  }
+}
+
+@keyframes flashIn {
+  from {
+    opacity: 0.85;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 @media (max-width: 980px) {
   .overview-grid,
   .day-grid {
@@ -468,6 +688,10 @@ li {
 
   .map-card {
     grid-row: auto;
+  }
+
+  .cursor-glow {
+    display: none;
   }
 }
 
