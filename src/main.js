@@ -27,6 +27,7 @@ app.innerHTML = `
     <main class="main-grid">
       <section class="drive-stage">
         <canvas id="driveCanvas" aria-label="Journey driving stage"></canvas>
+        <button id="mobilePlayBtn" class="mobile-play-btn" type="button">播放旅程</button>
         <div class="stage-overlay">
           <span class="badge" id="cityBadge">下一站 --</span>
           <div class="route-progress"><i id="routeProgressFill"></i></div>
@@ -292,6 +293,37 @@ function initAutoPlayGuard(engine, store) {
   };
 }
 
+function initMobilePlayButton(engine, store) {
+  const playBtn = document.getElementById('mobilePlayBtn');
+  if (!playBtn) return;
+
+  function sync() {
+    const state = store.getState();
+    const shouldShow = window.innerWidth <= 760 && state.mode === 'driving' && !state.auto;
+    playBtn.classList.toggle('is-visible', shouldShow);
+  }
+
+  playBtn.addEventListener('click', () => {
+    engine.setAuto(true);
+    sync();
+  });
+
+  window.addEventListener('resize', sync);
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (document.visibilityState === 'visible') {
+        engine.setAuto(true);
+      }
+      sync();
+    },
+    { passive: true }
+  );
+
+  store.subscribe(sync);
+  sync();
+}
+
 async function loadAmap() {
   if (window.AMap) return window.AMap;
 
@@ -491,4 +523,5 @@ initMiniMap(store);
 initAmbientMusic();
 engine.setAuto(true);
 initAutoPlayGuard(engine, store);
+initMobilePlayButton(engine, store);
 engine.start();

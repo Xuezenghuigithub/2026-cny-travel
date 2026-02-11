@@ -129,6 +129,31 @@ body[data-mood='return'] {
   display: block;
 }
 
+.mobile-play-btn {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  z-index: 6;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.52rem 0.84rem;
+  font: 700 0.8rem/1 'Rajdhani', sans-serif;
+  letter-spacing: 0.04em;
+  color: #2a1508;
+  background: linear-gradient(120deg, rgba(255, 182, 100, 0.96), rgba(255, 115, 69, 0.96));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.mobile-play-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
 .stage-overlay {
   position: absolute;
   top: 0.9rem;
@@ -765,6 +790,12 @@ body[data-mood='return'] {
   .drive-stage {
     height: 34svh;
     min-height: 250px;
+  }
+
+  .mobile-play-btn {
+    min-height: 38px;
+    padding: 0.46rem 0.78rem;
+    font-size: 0.76rem;
   }
 
   .cabin-seat::after {
