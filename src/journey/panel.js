@@ -1,7 +1,3 @@
-function pct(value) {
-  return `${Math.round(value)}%`;
-}
-
 function formatKm(value) {
   return `${Math.round(value)} km`;
 }
@@ -21,8 +17,6 @@ function findCurrentStop(model, dayIndex) {
 export function createPanelRenderer({ model, store, engine }) {
   const hudDay = document.getElementById('hudDay');
   const hudKm = document.getElementById('hudKm');
-  const hudFuel = document.getElementById('hudFuel');
-  const hudFatigue = document.getElementById('hudFatigue');
   const hudWeather = document.getElementById('hudWeather');
 
   const missionTitle = document.getElementById('missionTitle');
@@ -84,8 +78,6 @@ export function createPanelRenderer({ model, store, engine }) {
     hudDay.textContent = `DAY ${day.id} · ${day.festival}`;
     hudKm.textContent = formatKm(state.km);
     hudWeather.textContent = weatherByMood(day.mood);
-    hudFuel.textContent = `油量 ${pct(state.fuel)}`;
-    hudFatigue.textContent = `疲劳 ${pct(state.fatigue)}`;
 
     missionTitle.textContent = day.title;
     missionSub.textContent = `${day.date} | ${day.lunar} | ${day.element}`;

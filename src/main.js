@@ -13,7 +13,6 @@ app.innerHTML = `
   <div class="arcade-shell">
     <header class="top-band">
       <div>
-        <p class="brand">沪闪沪闪 · 来到福建</p>
         <h1>${tripPlan.title}</h1>
       </div>
       <div class="chip-row">
@@ -49,10 +48,6 @@ app.innerHTML = `
         </section>
 
         <section class="paper crew-card">
-          <div class="crew-head">
-            <span id="hudFuel">油量 100%</span>
-            <span id="hudFatigue">疲劳 10%</span>
-          </div>
           <div class="cabin-scene" aria-label="车内四人座位动画平面视图">
             <div class="dash-top"></div>
             <div class="cabin-seat seat-driver">

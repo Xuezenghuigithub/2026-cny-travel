@@ -16,6 +16,10 @@ function parseTimeLabel(item) {
   return match ? match[0] : '--:--';
 }
 
+function stripTimePrefix(item) {
+  return String(item).replace(/^\s*\d{1,2}:\d{2}\s*/, '').trim();
+}
+
 export function createJourneyModel(tripPlan) {
   let cursorKm = 0;
 
@@ -91,7 +95,7 @@ export function createJourneyModel(tripPlan) {
       const active = Math.min(count - 1, Math.floor(segmentProgress * count));
 
       return day.schedule.map((item, idx) => ({
-        label: item,
+        label: stripTimePrefix(item),
         time: parseTimeLabel(item),
         status: idx < active ? 'done' : idx === active ? 'active' : 'todo'
       }));

@@ -1,6 +1,5 @@
 export const tripPlan = {
   title: '沪闪沪闪 来到福建',
-  subtitle: '一路有福，归来更酷',
   travelWindow: '2026-02-14 至 2026-02-22',
   totalDistanceKm: 2360,
   estFuelAndRoadToll: 2850,
