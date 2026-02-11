@@ -13,7 +13,7 @@ app.innerHTML = `
   <div class="arcade-shell">
     <header class="top-band">
       <div>
-        <p class="brand">CNY ROADBOOK · ARCADE MODE</p>
+        <p class="brand">沪闪沪闪 · 来到福建</p>
         <h1>${tripPlan.title}</h1>
       </div>
       <div class="chip-row">
@@ -132,7 +132,7 @@ function initCrewCatchphrases() {
     'seat-driver': '不用不用，我还能开',
     'seat-passenger': '哈哈哈',
     'seat-rear-left': '你们看，我都行',
-    'seat-rear-right': 'This is fucking ***.'
+    'seat-rear-right': 'This is fucking 福建.'
   };
 
   const seats = [...document.querySelectorAll('.cabin-seat')];

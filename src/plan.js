@@ -1,6 +1,6 @@
 export const tripPlan = {
-  title: '2026 CNY 上海→福建沿海自驾',
-  subtitle: '2/14 下午出发，2/22 返程；按农历节点执行的 J 人路线',
+  title: '沪闪沪闪 来到福建',
+  subtitle: '一路有福，归来更酷',
   travelWindow: '2026-02-14 至 2026-02-22',
   totalDistanceKm: 2360,
   estFuelAndRoadToll: 2850,
