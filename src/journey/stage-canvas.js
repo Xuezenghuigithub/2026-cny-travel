@@ -1,3 +1,5 @@
+import cadillacLogoUrl from '../static/Cadillac.png';
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -27,6 +29,13 @@ export function createStageCanvas(canvas, model, store) {
   let rafId = 0;
   let latest = store.getState();
 
+  const logoImg = new Image();
+  let logoImgLoaded = false;
+  logoImg.onload = () => {
+    logoImgLoaded = true;
+  };
+  logoImg.src = cadillacLogoUrl;
+
   function resize() {
     const rect = canvas.getBoundingClientRect();
     width = Math.max(1, Math.floor(rect.width));
@@ -54,17 +63,20 @@ export function createStageCanvas(canvas, model, store) {
   }
 
   function drawPaperTexture() {
-    ctx.globalAlpha = 0.18;
+    ctx.globalAlpha = 0.12;
     for (let x = 0; x < width; x += 6) {
-      const h = 2 + ((x * 7) % 5);
-      ctx.fillStyle = x % 12 === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+      const h = 1 + ((x * 7) % 4);
+      ctx.fillStyle = x % 12 === 0 ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)';
       ctx.fillRect(x, (x * 13) % height, 1, h);
     }
     ctx.globalAlpha = 1;
   }
 
   function drawBackground(palette, km) {
-    ctx.fillStyle = palette.sky;
+    const sky = ctx.createLinearGradient(0, 0, 0, height);
+    sky.addColorStop(0, palette.sky);
+    sky.addColorStop(1, '#17293d');
+    ctx.fillStyle = sky;
     ctx.fillRect(0, 0, width, height);
 
     const sunX = width * (0.18 + Math.sin(km * 0.002) * 0.04);
@@ -74,15 +86,16 @@ export function createStageCanvas(canvas, model, store) {
     ctx.arc(sunX, sunY, 42, 0, Math.PI * 2);
     ctx.fill();
 
+    const horizonY = height * 0.6;
+
     ctx.fillStyle = palette.hillA;
     ctx.beginPath();
-    ctx.moveTo(0, height * 0.54);
-    ctx.lineTo(width * 0.16, height * 0.42);
-    ctx.lineTo(width * 0.3, height * 0.5);
-    ctx.lineTo(width * 0.48, height * 0.4);
-    ctx.lineTo(width * 0.7, height * 0.52);
-    ctx.lineTo(width * 0.88, height * 0.45);
-    ctx.lineTo(width, height * 0.54);
+    ctx.moveTo(0, horizonY);
+    ctx.lineTo(width * 0.18, horizonY - 92);
+    ctx.lineTo(width * 0.34, horizonY - 18);
+    ctx.lineTo(width * 0.54, horizonY - 108);
+    ctx.lineTo(width * 0.78, horizonY - 20);
+    ctx.lineTo(width, horizonY - 70);
     ctx.lineTo(width, height);
     ctx.lineTo(0, height);
     ctx.closePath();
@@ -90,58 +103,103 @@ export function createStageCanvas(canvas, model, store) {
 
     ctx.fillStyle = palette.hillB;
     ctx.beginPath();
-    ctx.moveTo(0, height * 0.64);
-    ctx.lineTo(width * 0.13, height * 0.56);
-    ctx.lineTo(width * 0.3, height * 0.64);
-    ctx.lineTo(width * 0.5, height * 0.56);
-    ctx.lineTo(width * 0.72, height * 0.66);
-    ctx.lineTo(width * 0.89, height * 0.58);
-    ctx.lineTo(width, height * 0.64);
+    ctx.moveTo(0, horizonY + 0.09 * height);
+    ctx.lineTo(width * 0.15, horizonY + 0.01 * height);
+    ctx.lineTo(width * 0.39, horizonY + 0.11 * height);
+    ctx.lineTo(width * 0.58, horizonY + 0.02 * height);
+    ctx.lineTo(width * 0.8, horizonY + 0.15 * height);
+    ctx.lineTo(width, horizonY + 0.06 * height);
     ctx.lineTo(width, height);
     ctx.lineTo(0, height);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = 'rgba(66, 133, 139, 0.32)';
-    for (let i = 0; i < 8; i += 1) {
-      const y = height * (0.67 + i * 0.022);
-      const shift = (km * (0.22 + i * 0.02)) % 30;
-      ctx.fillRect(-30 + shift, y, width + 60, 2);
-    }
+    const coastTopX = width * 0.31;
+    const coastMidX = width * 0.25;
+    const coastBottomX = width * 0.2;
 
-    // Fujian tulou icon
-    const tx = width * 0.78;
-    const ty = height * 0.63;
-    ctx.fillStyle = '#ad7a52';
+    const sea = ctx.createLinearGradient(0, horizonY - 42, 0, height);
+    sea.addColorStop(0, 'rgba(88, 176, 204, 0.66)');
+    sea.addColorStop(0.45, 'rgba(33, 108, 146, 0.82)');
+    sea.addColorStop(1, 'rgba(9, 41, 67, 0.9)');
+    ctx.fillStyle = sea;
     ctx.beginPath();
-    ctx.ellipse(tx, ty, 34, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#3f2c20';
-    ctx.beginPath();
-    ctx.ellipse(tx, ty, 13, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  function drawRoad(palette, km, speed) {
-    const topY = height * 0.52;
-    const bottomY = height * 1.02;
-
-    ctx.fillStyle = palette.road;
-    ctx.beginPath();
-    ctx.moveTo(width * 0.43, topY);
-    ctx.lineTo(width * 0.57, topY);
-    ctx.lineTo(width * 0.78, bottomY);
-    ctx.lineTo(width * 0.22, bottomY);
+    ctx.moveTo(0, horizonY - 28);
+    ctx.lineTo(coastTopX, horizonY + 10);
+    ctx.lineTo(coastMidX, horizonY + height * 0.24);
+    ctx.lineTo(coastBottomX, height);
+    ctx.lineTo(0, height);
     ctx.closePath();
     ctx.fill();
 
-    ctx.strokeStyle = '#df8a58';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(219, 241, 248, 0.42)';
+    ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.moveTo(width * 0.43, topY);
-    ctx.lineTo(width * 0.22, bottomY);
-    ctx.moveTo(width * 0.57, topY);
-    ctx.lineTo(width * 0.78, bottomY);
+    ctx.moveTo(0, horizonY - 20);
+    ctx.quadraticCurveTo(width * 0.14, horizonY - 28, coastTopX + 8, horizonY + 4);
+    ctx.stroke();
+
+    for (let i = 0; i < 12; i += 1) {
+      const t = i / 11;
+      const y = horizonY + 6 + t * (height - horizonY - 18);
+      const coastX = coastTopX + (coastBottomX - coastTopX) * t;
+      const shift = (km * (0.28 + i * 0.015)) % 44;
+      const waveLen = 8 + i * 1.6;
+      ctx.strokeStyle = i % 2 === 0 ? 'rgba(165, 228, 241, 0.34)' : 'rgba(88, 180, 208, 0.26)';
+      ctx.lineWidth = 0.9 + t * 1.2;
+      ctx.beginPath();
+      for (let x = 0; x <= coastX - 8; x += 6) {
+        const wave = Math.sin((x + shift) / waveLen) * (0.6 + t * 1.2);
+        if (x === 0) ctx.moveTo(x, y + wave);
+        else ctx.lineTo(x, y + wave);
+      }
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'rgba(246, 215, 166, 0.62)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(coastTopX, horizonY + 10);
+    ctx.lineTo(coastBottomX, height);
+    ctx.stroke();
+  }
+
+  function drawRoad(palette, km, speed, drift) {
+    const topY = height * 0.6;
+    const bottomY = height * 1.02;
+    const leftTopX = width * 0.34;
+    const rightTopX = width * 0.66;
+    const leftBottomX = width * 0.18;
+    const rightBottomX = width * 0.82;
+
+    ctx.fillStyle = palette.road;
+    ctx.beginPath();
+    ctx.moveTo(leftTopX, topY);
+    ctx.lineTo(rightTopX, topY);
+    ctx.lineTo(rightBottomX, bottomY);
+    ctx.lineTo(leftBottomX, bottomY);
+    ctx.closePath();
+    ctx.fill();
+
+    const roadShade = ctx.createLinearGradient(0, topY, 0, bottomY);
+    roadShade.addColorStop(0, 'rgba(255,255,255,0.04)');
+    roadShade.addColorStop(1, 'rgba(0,0,0,0.22)');
+    ctx.fillStyle = roadShade;
+    ctx.beginPath();
+    ctx.moveTo(leftTopX, topY);
+    ctx.lineTo(rightTopX, topY);
+    ctx.lineTo(rightBottomX, bottomY);
+    ctx.lineTo(leftBottomX, bottomY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#f0b28a';
+    ctx.lineWidth = 3.8;
+    ctx.beginPath();
+    ctx.moveTo(leftTopX, topY);
+    ctx.lineTo(leftBottomX, bottomY);
+    ctx.moveTo(rightTopX, topY);
+    ctx.lineTo(rightBottomX, bottomY);
     ctx.stroke();
 
     const pulse = (performance.now() * (0.0014 + speed * 0.0007) + km * 0.01) % 1;
@@ -154,34 +212,124 @@ export function createStageCanvas(canvas, model, store) {
     }
   }
 
-  function drawCar(speed) {
-    const cx = width * 0.5;
-    const cy = height * 0.85 + Math.sin(performance.now() / 210) * (1 + speed * 0.5);
-    const w = clamp(width * 0.17, 116, 196);
-    const h = w * 0.38;
+  function drawCar(speed, drift) {
+    const cx = width * 0.5 + drift * 0.8;
+    const cy = height * 0.84 + Math.sin(performance.now() / 210) * (1 + speed * 0.42);
+    const carW = clamp(width * 0.27, 200, 308);
+    const carH = carW * 0.78;
+    const tilt = ((-2 + drift * 0.11) * Math.PI) / 180;
 
-    ctx.fillStyle = 'rgba(20, 16, 20, 0.25)';
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(tilt);
+
+    const slip = clamp(drift * 0.22, -12, 12);
+    const skidY = carH * 0.36;
+    const tireGap = carW * 0.26;
+    for (let i = 0; i < 2; i += 1) {
+      const side = i === 0 ? -1 : 1;
+      const x = side * tireGap;
+      ctx.strokeStyle = 'rgba(18, 14, 14, 0.34)';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, skidY);
+      ctx.quadraticCurveTo(x + side * slip, skidY + 18, x + side * slip * 1.2, skidY + 58);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(66, 48, 44, 0.18)';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(x + side * 4, skidY + 2);
+      ctx.quadraticCurveTo(x + side * (slip + 2), skidY + 22, x + side * (slip + 5), skidY + 56);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.beginPath();
-    ctx.ellipse(cx, cy + h * 0.65, w * 0.46, 10, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, carH * 0.46, carW * 0.39, 15, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#de6248';
+    ctx.fillStyle = '#10151d';
     ctx.beginPath();
-    ctx.moveTo(cx - w * 0.5, cy + h * 0.1);
-    ctx.lineTo(cx - w * 0.34, cy - h * 0.25);
-    ctx.lineTo(cx + w * 0.34, cy - h * 0.25);
-    ctx.lineTo(cx + w * 0.5, cy + h * 0.1);
-    ctx.lineTo(cx + w * 0.42, cy + h * 0.44);
-    ctx.lineTo(cx - w * 0.42, cy + h * 0.44);
+    ctx.ellipse(-carW * 0.33, carH * 0.36, carW * 0.083, carH * 0.11, 0.1, 0, Math.PI * 2);
+    ctx.ellipse(carW * 0.33, carH * 0.36, carW * 0.083, carH * 0.11, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#7f8ea4';
+    ctx.beginPath();
+    ctx.arc(-carW * 0.34, carH * 0.36, carW * 0.03, 0, Math.PI * 2);
+    ctx.arc(carW * 0.34, carH * 0.36, carW * 0.03, 0, Math.PI * 2);
+    ctx.fill();
+
+    const bodyGrad = ctx.createLinearGradient(0, -carH * 0.58, 0, carH * 0.44);
+    bodyGrad.addColorStop(0, '#74808d');
+    bodyGrad.addColorStop(0.32, '#202a35');
+    bodyGrad.addColorStop(1, '#090d14');
+
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(-carW * 0.44, carH * 0.08);
+    ctx.bezierCurveTo(-carW * 0.45, -carH * 0.12, -carW * 0.32, -carH * 0.4, -carW * 0.08, -carH * 0.56);
+    ctx.lineTo(carW * 0.08, -carH * 0.56);
+    ctx.bezierCurveTo(carW * 0.32, -carH * 0.4, carW * 0.45, -carH * 0.12, carW * 0.44, carH * 0.08);
+    ctx.bezierCurveTo(carW * 0.43, carH * 0.23, carW * 0.34, carH * 0.34, carW * 0.22, carH * 0.4);
+    ctx.lineTo(-carW * 0.22, carH * 0.4);
+    ctx.bezierCurveTo(-carW * 0.34, carH * 0.34, -carW * 0.43, carH * 0.23, -carW * 0.44, carH * 0.08);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#f1f1ea';
-    ctx.fillRect(cx - w * 0.23, cy - h * 0.18, w * 0.46, h * 0.18);
+    ctx.strokeStyle = 'rgba(10, 13, 18, 0.9)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
 
-    ctx.fillStyle = '#202030';
-    ctx.fillRect(cx - w * 0.36, cy + h * 0.28, w * 0.18, h * 0.17);
-    ctx.fillRect(cx + w * 0.18, cy + h * 0.28, w * 0.18, h * 0.17);
+    const glassGrad = ctx.createLinearGradient(0, -carH * 0.54, 0, -carH * 0.2);
+    glassGrad.addColorStop(0, 'rgba(224,236,255,0.9)');
+    glassGrad.addColorStop(1, 'rgba(128,157,189,0.86)');
+    ctx.fillStyle = glassGrad;
+    ctx.beginPath();
+    ctx.moveTo(-carW * 0.19, -carH * 0.14);
+    ctx.bezierCurveTo(-carW * 0.16, -carH * 0.32, -carW * 0.09, -carH * 0.48, 0, -carH * 0.5);
+    ctx.bezierCurveTo(carW * 0.09, -carH * 0.48, carW * 0.16, -carH * 0.32, carW * 0.19, -carH * 0.14);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#121824';
+    ctx.fillRect(-carW * 0.21, carH * 0.03, carW * 0.42, carH * 0.14);
+    ctx.strokeStyle = 'rgba(145, 162, 187, 0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(-carW * 0.21, carH * 0.03, carW * 0.42, carH * 0.14);
+
+    ctx.strokeStyle = '#f16363';
+    ctx.lineWidth = 4.8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-carW * 0.39, carH * 0.1);
+    ctx.quadraticCurveTo(-carW * 0.31, carH * 0.04, -carW * 0.2, carH * 0.07);
+    ctx.moveTo(carW * 0.39, carH * 0.1);
+    ctx.quadraticCurveTo(carW * 0.31, carH * 0.04, carW * 0.2, carH * 0.07);
+    ctx.stroke();
+
+    ctx.fillStyle = '#0e141d';
+    ctx.beginPath();
+    ctx.roundRect(-carW * 0.3, carH * 0.26, carW * 0.16, carH * 0.12, 5);
+    ctx.roundRect(carW * 0.14, carH * 0.26, carW * 0.16, carH * 0.12, 5);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(212, 224, 241, 0.38)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-carW * 0.31, -carH * 0.06);
+    ctx.lineTo(-carW * 0.07, -carH * 0.35);
+    ctx.moveTo(carW * 0.31, -carH * 0.06);
+    ctx.lineTo(carW * 0.07, -carH * 0.35);
+    ctx.stroke();
+
+    if (logoImgLoaded) {
+      const logoW = carW * 0.18;
+      const logoH = logoW * 0.52;
+      ctx.drawImage(logoImg, -logoW * 0.5, carH * 0.1, logoW, logoH);
+    }
+
+    ctx.restore();
   }
 
   function drawCnyLanternBand(km) {
@@ -215,7 +363,6 @@ export function createStageCanvas(canvas, model, store) {
     ctx.fillText(`${day.festival} · 福建沿海路书`, x + 10, y + 17);
     ctx.font = '600 12px "Noto Sans SC", sans-serif';
     ctx.fillText(shortStopText(day.title), x + 10, y + 33);
-
   }
 
   function drawParticles() {
@@ -238,11 +385,12 @@ export function createStageCanvas(canvas, model, store) {
     const day = model.tripPlan.days[latest.dayIndex] || model.tripPlan.days[0];
     const palette = posterPalette[day?.mood] || posterPalette.city;
     const speed = latest.speedMultiplier + latest.speedModifier;
+    const drift = Math.sin((performance.now() + latest.km * 22) * 0.0028) * (9 + speed * 6);
 
     drawBackground(palette, latest.km);
     drawCnyLanternBand(latest.km);
-    drawRoad(palette, latest.km, speed);
-    drawCar(speed);
+    drawRoad(palette, latest.km, speed, drift);
+    drawCar(speed, drift);
     drawPosterLabel(day);
     drawParticles();
     drawPaperTexture();
