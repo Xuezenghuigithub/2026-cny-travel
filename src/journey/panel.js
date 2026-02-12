@@ -27,7 +27,6 @@ export function createPanelRenderer({ model, store, engine }) {
   const timeline = document.getElementById('timeline');
   const focus = document.getElementById('focusText');
   const food = document.getElementById('foodList');
-  const hotelName = document.getElementById('hotelName');
   const hotelLink = document.getElementById('hotelLink');
   const backup = document.getElementById('backupText');
   const cityBadge = document.getElementById('cityBadge');
@@ -133,9 +132,9 @@ export function createPanelRenderer({ model, store, engine }) {
 
     focus.textContent = day.focus;
     food.innerHTML = day.food.map((item) => `<li>${item}</li>`).join('');
-    if (hotelName) hotelName.textContent = day.sleep;
     if (hotelLink) {
       const keyword = encodeURIComponent(`${day.sleep} 酒店`);
+      hotelLink.textContent = day.sleep;
       hotelLink.href = `https://uri.amap.com/search?keyword=${keyword}`;
     }
     backup.textContent = `备选: ${day.backup}`;

@@ -117,10 +117,7 @@ app.innerHTML = `
             <div class="split-line" aria-hidden="true"></div>
             <h3>住哪</h3>
             <div class="hotel-row">
-              <p id="hotelName" class="hotel-name"></p>
-              <a id="hotelLink" class="hotel-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="打开高德地图酒店位置">
-                <span aria-hidden="true">📍</span>
-              </a>
+              <a id="hotelLink" class="hotel-link" href="#" target="_blank" rel="noopener noreferrer"></a>
             </div>
           </article>
           <article>
@@ -139,6 +136,10 @@ app.innerHTML = `
       <button id="quickBtn" class="ctl">快速查看</button>
       <button id="musicBtn" class="ctl music-btn">音乐: 启动中</button>
       <span class="hint">Space 播放/暂停 · 数字键 1-9 直达天数 · Q 快速查看</span>
+      <span class="copyright">
+        © 2026
+        <a href="https://xuezenghui.com" target="_blank" rel="noopener noreferrer">Zander Xue</a>
+      </span>
     </footer>
   </div>
 

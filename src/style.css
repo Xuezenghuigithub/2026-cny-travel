@@ -621,19 +621,14 @@ body[data-mood='return'] {
 }
 
 .hotel-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.45rem;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 206, 142, 0.42);
-  background: rgba(17, 20, 36, 0.72);
-  color: #ffe5bf;
-  font-size: 1rem;
-  text-decoration: none;
+  display: inline;
+  margin-top: 0.28rem;
+  color: #ffd9aa;
+  font: 700 0.78rem/1.35 'Rajdhani', sans-serif;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  word-break: break-word;
 }
 
 .split-line {
@@ -650,13 +645,11 @@ body[data-mood='return'] {
 
 .hotel-row {
   margin-top: 0.45rem;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+  display: block;
 }
 
-.hotel-row .hotel-name {
-  margin: 0;
+.hotel-link:hover {
+  color: #fff0d3;
 }
 
 .controls {
@@ -689,6 +682,24 @@ body[data-mood='return'] {
   margin-left: auto;
   color: #f2d2aa;
   font-size: 0.78rem;
+}
+
+.copyright {
+  margin-left: 0.55rem;
+  color: #d9be98;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.copyright a {
+  color: #ffe0b6;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 208, 152, 0.45);
+}
+
+.copyright a:hover {
+  color: #fff1d8;
+  border-bottom-color: rgba(255, 233, 194, 0.9);
 }
 
 .quick-panel {
@@ -1007,6 +1018,12 @@ body[data-mood='return'] {
     display: none;
     width: 100%;
     margin-left: 0;
+  }
+
+  .copyright {
+    width: 100%;
+    margin-left: 0;
+    text-align: center;
   }
 
   .quick-panel {
