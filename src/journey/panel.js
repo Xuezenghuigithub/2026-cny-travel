@@ -27,14 +27,34 @@ export function createPanelRenderer({ model, store, engine }) {
   const timeline = document.getElementById('timeline');
   const focus = document.getElementById('focusText');
   const food = document.getElementById('foodList');
+  const hotelName = document.getElementById('hotelName');
+  const hotelLink = document.getElementById('hotelLink');
   const backup = document.getElementById('backupText');
   const cityBadge = document.getElementById('cityBadge');
 
   const autoBtn = document.getElementById('autoBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const speedBtn = document.getElementById('speedBtn');
-  const leftBtn = document.getElementById('leftBtn');
-  const rightBtn = document.getElementById('rightBtn');
+  const quickBtn = document.getElementById('quickBtn');
+  const quickPanel = document.getElementById('quickPanel');
+  const quickCloseBtn = document.getElementById('quickCloseBtn');
+
+  function jumpToDay(dayId) {
+    const segment = model.segments.find((item) => item.dayId === dayId);
+    if (!segment) return;
+    engine.resetToKm(segment.endKm);
+    if (quickPanel) {
+      quickPanel.classList.remove('is-open');
+      quickPanel.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function toggleQuickPanel(open) {
+    if (!quickPanel) return;
+    const willOpen = typeof open === 'boolean' ? open : !quickPanel.classList.contains('is-open');
+    quickPanel.classList.toggle('is-open', willOpen);
+    quickPanel.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+  }
 
   function renderTimeline(dayIndex, segmentProgress) {
     const rows = model.getTimeline(dayIndex, segmentProgress);
@@ -57,8 +77,18 @@ export function createPanelRenderer({ model, store, engine }) {
     const next = current >= 2 ? 1 : current + 0.5;
     engine.setSpeedMultiplier(next);
   });
-  leftBtn.addEventListener('click', () => engine.nudgeKm(-25));
-  rightBtn.addEventListener('click', () => engine.nudgeKm(25));
+  if (quickBtn) {
+    quickBtn.addEventListener('click', () => toggleQuickPanel());
+  }
+  if (quickCloseBtn) {
+    quickCloseBtn.addEventListener('click', () => toggleQuickPanel(false));
+  }
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-day-jump]');
+    if (!trigger) return;
+    jumpToDay(Number(trigger.dataset.dayJump));
+  });
 
   window.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
@@ -69,6 +99,20 @@ export function createPanelRenderer({ model, store, engine }) {
     if (event.code === 'ArrowRight') engine.nudgeKm(15);
     if (event.code === 'ArrowUp') engine.setSpeedMultiplier(Math.min(store.getState().speedMultiplier + 0.5, 3));
     if (event.code === 'ArrowDown') engine.setSpeedMultiplier(Math.max(store.getState().speedMultiplier - 0.5, 0.5));
+    if (event.code === 'KeyQ') {
+      event.preventDefault();
+      toggleQuickPanel();
+    }
+    if (event.code === 'Escape') {
+      toggleQuickPanel(false);
+    }
+    if (/^Digit[1-9]$/.test(event.code)) {
+      const dayId = Number(event.code.slice(-1));
+      if (dayId <= model.tripPlan.days.length) {
+        event.preventDefault();
+        jumpToDay(dayId);
+      }
+    }
   });
 
   const unsubscribe = store.subscribe((state) => {
@@ -88,6 +132,11 @@ export function createPanelRenderer({ model, store, engine }) {
 
     focus.textContent = day.focus;
     food.innerHTML = day.food.map((item) => `<li>${item}</li>`).join('');
+    if (hotelName) hotelName.textContent = day.sleep;
+    if (hotelLink) {
+      const keyword = encodeURIComponent(`${day.sleep} 酒店`);
+      hotelLink.href = `https://uri.amap.com/search?keyword=${keyword}`;
+    }
     backup.textContent = `备选: ${day.backup}`;
     cityBadge.textContent = `${findCurrentStop(model, state.dayIndex)} · 本段 ${segment.distanceKm}km`;
 

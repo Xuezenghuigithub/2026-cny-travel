@@ -8,6 +8,21 @@ import { createStageCanvas } from './journey/stage-canvas.js';
 import { createPanelRenderer } from './journey/panel.js';
 
 const app = document.querySelector('#app');
+const quickItemsHtml = tripPlan.days
+  .map((day) => {
+    const highlights = day.schedule.slice(0, 3).map((item) => `<li>${item}</li>`).join('');
+    return `
+      <article class="quick-item" data-day="${day.id}">
+        <button class="quick-jump" data-day-jump="${day.id}" type="button">DAY ${day.id}</button>
+        <div>
+          <h4>${day.title}</h4>
+          <p>${day.date} · ${day.festival}</p>
+          <ul>${highlights}</ul>
+        </div>
+      </article>
+    `;
+  })
+  .join('');
 
 app.innerHTML = `
   <canvas id="bgFireworks" class="bg-fireworks" aria-hidden="true"></canvas>
@@ -43,7 +58,7 @@ app.innerHTML = `
         </section>
 
         <section class="paper map-card">
-          <p class="panel-kicker">总览</p>
+          <p class="panel-kicker">MAP OVERVIEW</p>
           <div class="map-shell" id="miniMap" role="img" aria-label="高德地图行程总览"></div>
           <p class="map-note" id="mapHint"></p>
         </section>
@@ -97,8 +112,16 @@ app.innerHTML = `
 
         <section class="paper dual">
           <article>
-            <h3>福建味道</h3>
+            <h3>吃啥</h3>
             <ul id="foodList"></ul>
+            <div class="split-line" aria-hidden="true"></div>
+            <h3>住哪</h3>
+            <div class="hotel-row">
+              <p id="hotelName" class="hotel-name"></p>
+              <a id="hotelLink" class="hotel-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="打开高德地图酒店位置">
+                <span aria-hidden="true">📍</span>
+              </a>
+            </div>
           </article>
           <article>
             <h3>今日策略</h3>
@@ -113,12 +136,21 @@ app.innerHTML = `
       <button id="autoBtn" class="ctl is-active">连续播放</button>
       <button id="pauseBtn" class="ctl">暂停</button>
       <button id="speedBtn" class="ctl">x1.0</button>
-      <button id="leftBtn" class="ctl">回看 25km</button>
-      <button id="rightBtn" class="ctl">前进 25km</button>
+      <button id="quickBtn" class="ctl">快速查看</button>
       <button id="musicBtn" class="ctl music-btn">音乐: 启动中</button>
-      <span class="hint">Space 播放/暂停 · ← → 调整进度</span>
+      <span class="hint">Space 播放/暂停 · 数字键 1-9 直达天数 · Q 快速查看</span>
     </footer>
   </div>
+
+  <aside class="quick-panel" id="quickPanel" aria-hidden="true">
+    <header>
+      <h3>每日活动速览</h3>
+      <button id="quickCloseBtn" class="quick-close" type="button">关闭</button>
+    </header>
+    <div class="quick-list">
+      ${quickItemsHtml}
+    </div>
+  </aside>
 `;
 
 function toLngLat([lat, lng]) {
@@ -127,10 +159,10 @@ function toLngLat([lat, lng]) {
 
 function initCrewCatchphrases() {
   const phrases = {
-    'seat-driver': '不用不用，我还能开',
-    'seat-passenger': '不知丢走不走线',
-    'seat-rear-left': '你们看，我都行',
-    'seat-rear-right': 'This is fucking 福建.'
+    'seat-driver': ['不用不用，我还能开', '你放屁'],
+    'seat-passenger': ['不知丢走不走线', '哈哈哈'],
+    'seat-rear-left': ['你们看，我都行', '打麻将打麻将！'],
+    'seat-rear-right': ['This is fucking 福建', '雀氏！']
   };
 
   const seats = [...document.querySelectorAll('.cabin-seat')];
@@ -138,13 +170,19 @@ function initCrewCatchphrases() {
   seats.forEach((seat) => {
     const key = Object.keys(phrases).find((cls) => seat.classList.contains(cls));
     if (!key) return;
-    seat.dataset.catchphrase = phrases[key];
+    const options = phrases[key];
+    seat.dataset.catchphrase = options[Math.floor(Math.random() * options.length)];
     seat.classList.remove('is-open');
   });
 
   function speakRandomly(seat) {
     const nextDelay = 2200 + Math.random() * 4800;
     window.setTimeout(() => {
+      const key = Object.keys(phrases).find((cls) => seat.classList.contains(cls));
+      if (key) {
+        const options = phrases[key];
+        seat.dataset.catchphrase = options[Math.floor(Math.random() * options.length)];
+      }
       seat.classList.add('is-speaking');
       window.setTimeout(() => {
         seat.classList.remove('is-speaking');
