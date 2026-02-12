@@ -51,9 +51,19 @@ body[data-mood='return'] {
 
 #app {
   min-height: 100svh;
+  position: relative;
+}
+
+.bg-fireworks {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .arcade-shell {
+  position: relative;
+  z-index: 1;
   max-width: 1420px;
   margin: 0 auto;
   min-height: 100svh;
@@ -491,7 +501,7 @@ body[data-mood='return'] {
 
 .map-shell {
   width: 100%;
-  height: 220px;
+  height: 330px;
   display: block;
   border-bottom: 1px solid rgba(255, 209, 151, 0.2);
 }
@@ -543,6 +553,12 @@ body[data-mood='return'] {
   font-size: 0.9rem;
   letter-spacing: 0.04em;
   color: #ffe0b6;
+}
+
+.crew-timeline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
 }
 
 .timeline {
@@ -747,7 +763,11 @@ body[data-mood='return'] {
   }
 
   .map-shell {
-    height: 230px;
+    height: 300px;
+  }
+
+  .crew-timeline {
+    grid-template-columns: 1fr;
   }
 
   .timeline-item {
@@ -836,7 +856,7 @@ body[data-mood='return'] {
   }
 
   .map-shell {
-    height: 210px;
+    height: 260px;
   }
 
   .ctl {

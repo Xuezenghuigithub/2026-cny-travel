@@ -10,6 +10,7 @@ import { createPanelRenderer } from './journey/panel.js';
 const app = document.querySelector('#app');
 
 app.innerHTML = `
+  <canvas id="bgFireworks" class="bg-fireworks" aria-hidden="true"></canvas>
   <div class="arcade-shell">
     <header class="top-band">
       <div>
@@ -42,54 +43,56 @@ app.innerHTML = `
         </section>
 
         <section class="paper map-card">
-          <p class="panel-kicker">MAP OVERVIEW</p>
+          <p class="panel-kicker">总览</p>
           <div class="map-shell" id="miniMap" role="img" aria-label="高德地图行程总览"></div>
           <p class="map-note" id="mapHint"></p>
         </section>
 
-        <section class="paper crew-card">
-          <div class="cabin-scene" aria-label="车内四人座位动画平面视图">
-            <div class="dash-top"></div>
-            <div class="cabin-seat seat-driver">
-              <div class="chibi yawn">
-                <i class="head"></i>
-                <i class="body"></i>
-                <i class="arm arm-l"></i>
-                <i class="arm arm-r"></i>
-                <i class="bubble"></i>
+        <section class="paper crew-timeline">
+          <article>
+            <h3>发福小队</h3>
+            <div class="cabin-scene" aria-label="车内四人座位动画平面视图">
+              <div class="dash-top"></div>
+              <div class="cabin-seat seat-driver">
+                <div class="chibi yawn">
+                  <i class="head"></i>
+                  <i class="body"></i>
+                  <i class="arm arm-l"></i>
+                  <i class="arm arm-r"></i>
+                  <i class="bubble"></i>
+                </div>
+                <p>青菜</p>
               </div>
-              <p>青菜</p>
-            </div>
-            <div class="cabin-seat seat-passenger">
-              <div class="chibi map">
-                <i class="head"></i>
-                <i class="body"></i>
-                <i class="prop"></i>
+              <div class="cabin-seat seat-passenger">
+                <div class="chibi map">
+                  <i class="head"></i>
+                  <i class="body"></i>
+                  <i class="prop"></i>
+                </div>
+                <p>小居</p>
               </div>
-              <p>小居</p>
-            </div>
-            <div class="cabin-seat seat-rear-left">
-              <div class="chibi camera">
-                <i class="head"></i>
-                <i class="body"></i>
-                <i class="prop"></i>
+              <div class="cabin-seat seat-rear-left">
+                <div class="chibi camera">
+                  <i class="head"></i>
+                  <i class="body"></i>
+                  <i class="prop"></i>
+                </div>
+                <p>静静</p>
               </div>
-              <p>静静</p>
-            </div>
-            <div class="cabin-seat seat-rear-right">
-              <div class="chibi wave">
-                <i class="head"></i>
-                <i class="body"></i>
-                <i class="arm arm-r"></i>
+              <div class="cabin-seat seat-rear-right">
+                <div class="chibi wave">
+                  <i class="head"></i>
+                  <i class="body"></i>
+                  <i class="arm arm-r"></i>
+                </div>
+                <p>Zander</p>
               </div>
-              <p>Zander</p>
             </div>
-          </div>
-        </section>
-
-        <section class="paper">
-          <h3>当日时间线</h3>
-          <ol class="timeline" id="timeline"></ol>
+          </article>
+          <article>
+            <h3>当日时间线</h3>
+            <ol class="timeline" id="timeline"></ol>
+          </article>
         </section>
 
         <section class="paper dual">
@@ -359,7 +362,7 @@ async function initMiniMap(store) {
       resizeEnable: true,
       dragEnable: true,
       zoomEnable: true,
-      scrollWheel: false
+      scrollWheel: true
     });
 
     const polyline = new AMap.Polyline({
@@ -382,8 +385,10 @@ async function initMiniMap(store) {
     map.add([start, end]);
 
     const cityOverlays = [];
+    const cityCoords = new Map();
     tripPlan.stops.forEach((stop, idx) => {
       const point = [stop.lng, stop.lat];
+      if (!cityCoords.has(stop.name)) cityCoords.set(stop.name, point);
       cityOverlays.push(
         new AMap.CircleMarker({
           center: point,
@@ -412,6 +417,35 @@ async function initMiniMap(store) {
       );
     });
     map.add(cityOverlays);
+
+    const dayLabels = [];
+    tripPlan.days.forEach((day) => {
+      const routePair = day.title.split('-').map((name) => name.trim());
+      if (routePair.length !== 2) return;
+
+      const from = cityCoords.get(routePair[0]);
+      const to = cityCoords.get(routePair[1]);
+      if (!from || !to) return;
+
+      const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
+      dayLabels.push(
+        new AMap.Text({
+          text: `Day${day.id}`,
+          position: mid,
+          offset: new AMap.Pixel(0, -4),
+          style: {
+            color: '#fff8ec',
+            fontSize: '11px',
+            fontWeight: '700',
+            background: 'rgba(29,21,25,0.82)',
+            border: '1px solid rgba(255,188,118,0.7)',
+            padding: '1px 6px',
+            borderRadius: '999px'
+          }
+        })
+      );
+    });
+    if (dayLabels.length) map.add(dayLabels);
 
     await new Promise((resolve) => {
       AMap.plugin('AMap.DistrictSearch', () => resolve());
@@ -480,6 +514,83 @@ async function initMiniMap(store) {
   }
 }
 
+function initBackgroundFireworks() {
+  const canvas = document.getElementById('bgFireworks');
+  const shell = document.querySelector('.arcade-shell');
+  if (!canvas || !shell) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const particles = [];
+  let lastSpawn = 0;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function spawnBurst(x, y) {
+    const count = 16;
+    const hue = 8 + Math.random() * 130;
+    for (let i = 0; i < count; i += 1) {
+      const angle = (Math.PI * 2 * i) / count;
+      const speed = 0.9 + Math.random() * 2.1;
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        size: 1 + Math.random() * 2.4,
+        hue
+      });
+    }
+  }
+
+  document.addEventListener(
+    'pointermove',
+    (event) => {
+      const rect = shell.getBoundingClientRect();
+      const inMain =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
+      if (inMain) return;
+
+      const now = performance.now();
+      if (now - lastSpawn < 80) return;
+      lastSpawn = now;
+      spawnBurst(event.clientX, event.clientY);
+    },
+    { passive: true }
+  );
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i -= 1) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.02;
+      p.life -= 0.018;
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${p.hue}, 95%, 66%, ${p.life})`;
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
 const model = createJourneyModel(tripPlan);
 const initialState = {
   mode: 'driving',
@@ -516,6 +627,7 @@ createPanelRenderer({ model, store, engine });
 initCrewCatchphrases();
 initMiniMap(store);
 initAmbientMusic();
+initBackgroundFireworks();
 engine.setAuto(true);
 initAutoPlayGuard(engine, store);
 initMobilePlayButton(engine, store);
