@@ -135,7 +135,7 @@ app.innerHTML = `
       <button id="speedBtn" class="ctl">x1.0</button>
       <button id="quickBtn" class="ctl">快速查看</button>
       <button id="musicBtn" class="ctl music-btn">音乐: 启动中</button>
-      <span class="hint">Space 播放/暂停 · 数字键 1-9 直达天数 · Q 快速查看</span>
+      <span class="hint">Space 播放/暂停 · 拖动进度条调整进度 · 数字键 1-9 直达天数 · Q 快速查看</span>
       <span class="copyright">
         © 2026
         <a href="https://xuezenghui.com" target="_blank" rel="noopener noreferrer">Zander Xue</a>

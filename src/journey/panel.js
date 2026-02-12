@@ -21,6 +21,7 @@ export function createPanelRenderer({ model, store, engine }) {
 
   const missionTitle = document.getElementById('missionTitle');
   const missionSub = document.getElementById('missionSub');
+  const routeProgress = document.querySelector('.route-progress');
   const routeProgressFill = document.getElementById('routeProgressFill');
   const routeProgressText = document.getElementById('routeProgressText');
 
@@ -82,6 +83,42 @@ export function createPanelRenderer({ model, store, engine }) {
   }
   if (quickCloseBtn) {
     quickCloseBtn.addEventListener('click', () => toggleQuickPanel(false));
+  }
+
+  if (routeProgress) {
+    let dragging = false;
+
+    function seekByClientX(clientX) {
+      const rect = routeProgress.getBoundingClientRect();
+      if (!rect.width) return;
+      const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      engine.seekToKm(model.totalKm * ratio, { auto: false });
+    }
+
+    routeProgress.addEventListener('pointerdown', (event) => {
+      dragging = true;
+      routeProgress.setPointerCapture(event.pointerId);
+      seekByClientX(event.clientX);
+      event.preventDefault();
+    });
+
+    routeProgress.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      seekByClientX(event.clientX);
+    });
+
+    routeProgress.addEventListener('pointerup', (event) => {
+      dragging = false;
+      routeProgress.releasePointerCapture(event.pointerId);
+    });
+
+    routeProgress.addEventListener('pointercancel', () => {
+      dragging = false;
+    });
+
+    routeProgress.addEventListener('click', (event) => {
+      seekByClientX(event.clientX);
+    });
   }
 
   document.addEventListener('click', (event) => {

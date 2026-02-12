@@ -188,6 +188,8 @@ body[data-mood='return'] {
   border-radius: 999px;
   overflow: hidden;
   background: rgba(7, 11, 22, 0.72);
+  cursor: ew-resize;
+  touch-action: none;
 }
 
 .route-progress i {

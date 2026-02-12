@@ -15,6 +15,14 @@ export function createJourneyEngine({ model, store, onEvent }) {
 
   const events = [...model.events].sort((a, b) => a.triggerKm - b.triggerKm);
 
+  function syncEventCursor(km) {
+    let idx = 0;
+    while (idx < events.length && events[idx].triggerKm <= km) {
+      idx += 1;
+    }
+    eventCursor = idx;
+  }
+
   function derive(next) {
     const km = clamp(next.km, 0, model.totalKm);
     const progress = km / model.totalKm;
@@ -102,9 +110,20 @@ export function createJourneyEngine({ model, store, onEvent }) {
     },
     nudgeKm(deltaKm) {
       store.update((prev) => derive({ ...prev, km: prev.km + deltaKm, auto: false }));
+      syncEventCursor(store.getState().km);
+    },
+    seekToKm(km, { auto = false } = {}) {
+      store.update((prev) =>
+        derive({
+          ...prev,
+          km,
+          mode: 'driving',
+          auto
+        })
+      );
+      syncEventCursor(store.getState().km);
     },
     resetToKm(km = 0) {
-      eventCursor = 0;
       const seed = store.getState();
       store.setState(
         derive({
@@ -117,6 +136,7 @@ export function createJourneyEngine({ model, store, onEvent }) {
           speedModifier: 0
         })
       );
+      syncEventCursor(store.getState().km);
     }
   };
 }
