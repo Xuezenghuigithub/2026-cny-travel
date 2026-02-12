@@ -152,6 +152,14 @@ app.innerHTML = `
       ${quickItemsHtml}
     </div>
   </aside>
+
+  <div class="mobile-guide" id="mobileGuide" aria-hidden="true">
+    <div class="mobile-guide-card">
+      <h3>手机端操作提示</h3>
+      <p>拖动画面上方进度条，可快速跳到任意行程。</p>
+      <button id="mobileGuideClose" type="button">知道了</button>
+    </div>
+  </div>
 `;
 
 function toLngLat([lat, lng]) {
@@ -359,6 +367,32 @@ function initMobilePlayButton(engine, store) {
 
   store.subscribe(sync);
   sync();
+}
+
+function initMobileGuide() {
+  const guide = document.getElementById('mobileGuide');
+  const closeBtn = document.getElementById('mobileGuideClose');
+  if (!guide || !closeBtn) return;
+
+  const isMobile = window.matchMedia('(max-width: 760px)').matches;
+  if (!isMobile) return;
+
+  const viewed = localStorage.getItem('journey_mobile_guide_seen') === '1';
+  if (!viewed) {
+    guide.classList.add('is-open');
+    guide.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeGuide() {
+    guide.classList.remove('is-open');
+    guide.setAttribute('aria-hidden', 'true');
+    localStorage.setItem('journey_mobile_guide_seen', '1');
+  }
+
+  closeBtn.addEventListener('click', closeGuide);
+  guide.addEventListener('click', (event) => {
+    if (event.target === guide) closeGuide();
+  });
 }
 
 async function loadAmap() {
@@ -838,6 +872,7 @@ initCrewCatchphrases();
 initMiniMap(store);
 initAmbientMusic();
 initBackgroundFireworks();
+initMobileGuide();
 engine.setAuto(true);
 initAutoPlayGuard(engine, store);
 initMobilePlayButton(engine, store);

@@ -730,6 +730,56 @@ body[data-mood='return'] {
   transform: translateY(0) scale(1);
 }
 
+.mobile-guide {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(4, 7, 13, 0.62);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.mobile-guide.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-guide-card {
+  width: min(360px, calc(100vw - 1.2rem));
+  margin: 14vh auto 0;
+  border-radius: 14px;
+  padding: 0.85rem 0.82rem 0.75rem;
+  border: 1px solid rgba(255, 206, 142, 0.38);
+  background:
+    linear-gradient(140deg, rgba(75, 25, 31, 0.72), rgba(17, 22, 38, 0.94)),
+    rgba(13, 17, 28, 0.95);
+  box-shadow: 0 20px 38px rgba(0, 0, 0, 0.42);
+}
+
+.mobile-guide-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #ffe5bc;
+}
+
+.mobile-guide-card p {
+  margin: 0.46rem 0 0;
+  color: #ffeacc;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.mobile-guide-card button {
+  margin-top: 0.72rem;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.45rem 0.78rem;
+  font: 700 0.8rem/1 'Rajdhani', sans-serif;
+  color: #2a1508;
+  background: linear-gradient(120deg, rgba(255, 182, 100, 0.96), rgba(255, 115, 69, 0.96));
+}
+
 .quick-panel header {
   display: flex;
   align-items: center;
