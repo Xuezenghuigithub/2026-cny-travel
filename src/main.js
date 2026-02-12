@@ -57,13 +57,11 @@ app.innerHTML = `
           <p class="mission-sub" id="missionSub"></p>
         </section>
 
-        <section class="paper map-card">
-          <p class="panel-kicker">MAP OVERVIEW</p>
-          <div class="map-shell" id="miniMap" role="img" aria-label="高德地图行程总览"></div>
-          <p class="map-note" id="mapHint"></p>
-        </section>
-
         <section class="paper crew-timeline">
+          <article>
+            <h3>当日时间线</h3>
+            <ol class="timeline" id="timeline"></ol>
+          </article>
           <article>
             <h3>发福小队</h3>
             <div class="cabin-scene" aria-label="车内四人座位动画平面视图">
@@ -104,10 +102,6 @@ app.innerHTML = `
               </div>
             </div>
           </article>
-          <article>
-            <h3>当日时间线</h3>
-            <ol class="timeline" id="timeline"></ol>
-          </article>
         </section>
 
         <section class="paper dual">
@@ -125,6 +119,12 @@ app.innerHTML = `
             <p id="focusText"></p>
             <p class="muted" id="backupText"></p>
           </article>
+        </section>
+
+        <section class="paper map-card">
+          <p class="panel-kicker">MAP OVERVIEW</p>
+          <div class="map-shell" id="miniMap" role="img" aria-label="高德地图行程总览"></div>
+          <p class="map-note" id="mapHint"></p>
         </section>
       </aside>
     </main>
