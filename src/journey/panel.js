@@ -42,7 +42,8 @@ export function createPanelRenderer({ model, store, engine }) {
   function jumpToDay(dayId) {
     const segment = model.segments.find((item) => item.dayId === dayId);
     if (!segment) return;
-    engine.resetToKm(segment.endKm);
+    engine.resetToKm(segment.startKm);
+    engine.setAuto(true);
     if (quickPanel) {
       quickPanel.classList.remove('is-open');
       quickPanel.setAttribute('aria-hidden', 'true');

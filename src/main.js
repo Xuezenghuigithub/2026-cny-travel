@@ -569,22 +569,116 @@ function initBackgroundFireworks() {
   resize();
   window.addEventListener('resize', resize);
 
-  function spawnBurst(x, y) {
-    const count = 16;
-    const hue = 8 + Math.random() * 130;
-    for (let i = 0; i < count; i += 1) {
-      const angle = (Math.PI * 2 * i) / count;
-      const speed = 0.9 + Math.random() * 2.1;
+  function spawnBurst(x, y, intensity = 1) {
+    const base = Math.floor(36 * intensity);
+    const primaryHue = 8 + Math.random() * 130;
+    const secondaryHue = 160 + Math.random() * 80;
+
+    for (let ring = 0; ring < 2; ring += 1) {
+      const count = base + ring * 12;
+      for (let i = 0; i < count; i += 1) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.08;
+        const speed = 0.9 + Math.random() * 2.6 + ring * 0.6;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          size: 1.1 + Math.random() * 3.1,
+          hue: ring === 0 ? primaryHue : secondaryHue
+        });
+      }
+    }
+
+    const glitterCount = Math.floor(26 * intensity);
+    for (let i = 0; i < glitterCount; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.5 + Math.random() * 1.5;
       particles.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        life: 1,
-        size: 1 + Math.random() * 2.4,
-        hue
+        life: 0.75 + Math.random() * 0.4,
+        size: 0.9 + Math.random() * 1.4,
+        hue: 35 + Math.random() * 40
       });
     }
+  }
+
+  function burstOnBlankAreas() {
+    const rect = shell.getBoundingClientRect();
+    const points = [];
+    const pad = 36;
+
+    if (rect.top > pad) {
+      points.push({ x: rect.left + rect.width * 0.2, y: rect.top * 0.45 });
+      points.push({ x: rect.left + rect.width * 0.8, y: rect.top * 0.55 });
+    }
+    if (window.innerHeight - rect.bottom > pad) {
+      const bottomGap = window.innerHeight - rect.bottom;
+      points.push({ x: rect.left + rect.width * 0.25, y: rect.bottom + bottomGap * 0.45 });
+      points.push({ x: rect.left + rect.width * 0.75, y: rect.bottom + bottomGap * 0.55 });
+    }
+    if (rect.left > pad) {
+      points.push({ x: rect.left * 0.5, y: rect.top + rect.height * 0.3 });
+      points.push({ x: rect.left * 0.55, y: rect.top + rect.height * 0.7 });
+    }
+    if (window.innerWidth - rect.right > pad) {
+      const rightGap = window.innerWidth - rect.right;
+      points.push({ x: rect.right + rightGap * 0.45, y: rect.top + rect.height * 0.35 });
+      points.push({ x: rect.right + rightGap * 0.55, y: rect.top + rect.height * 0.72 });
+    }
+
+    // Randomized scatter in blank areas to avoid a grid-like look.
+    const targetCount = 42;
+    let attempts = 0;
+    while (points.length < targetCount && attempts < targetCount * 14) {
+      attempts += 1;
+      const x = Math.random() * window.innerWidth;
+      const y = Math.random() * window.innerHeight;
+      const inMain =
+        x >= rect.left - pad &&
+        x <= rect.right + pad &&
+        y >= rect.top - pad &&
+        y <= rect.bottom + pad;
+      if (!inMain) {
+        points.push({ x, y });
+      }
+    }
+
+    if (!points.length) {
+      points.push(
+        { x: window.innerWidth * 0.08, y: window.innerHeight * 0.12 },
+        { x: window.innerWidth * 0.24, y: window.innerHeight * 0.18 },
+        { x: window.innerWidth * 0.41, y: window.innerHeight * 0.14 },
+        { x: window.innerWidth * 0.58, y: window.innerHeight * 0.2 },
+        { x: window.innerWidth * 0.76, y: window.innerHeight * 0.16 },
+        { x: window.innerWidth * 0.92, y: window.innerHeight * 0.12 },
+        { x: window.innerWidth * 0.1, y: window.innerHeight * 0.88 },
+        { x: window.innerWidth * 0.28, y: window.innerHeight * 0.82 },
+        { x: window.innerWidth * 0.44, y: window.innerHeight * 0.9 },
+        { x: window.innerWidth * 0.62, y: window.innerHeight * 0.84 },
+        { x: window.innerWidth * 0.79, y: window.innerHeight * 0.9 },
+        { x: window.innerWidth * 0.93, y: window.innerHeight * 0.86 }
+      );
+    }
+
+    points.forEach((point, idx) => {
+      const mainPower = 0.9 + Math.random() * 1.35;
+      const subPowerA = 0.6 + Math.random() * 0.85;
+      const subPowerB = 0.45 + Math.random() * 0.7;
+      window.setTimeout(() => spawnBurst(point.x, point.y, mainPower), 60 + idx * 22 + Math.random() * 40);
+      window.setTimeout(
+        () => spawnBurst(point.x + (Math.random() * 52 - 26), point.y + (Math.random() * 52 - 26), subPowerA),
+        210 + idx * 22 + Math.random() * 40
+      );
+      window.setTimeout(
+        () => spawnBurst(point.x + (Math.random() * 40 - 20), point.y + (Math.random() * 40 - 20), subPowerB),
+        390 + idx * 22 + Math.random() * 40
+      );
+    });
   }
 
   document.addEventListener(
@@ -599,9 +693,9 @@ function initBackgroundFireworks() {
       if (inMain) return;
 
       const now = performance.now();
-      if (now - lastSpawn < 80) return;
+      if (now - lastSpawn < 45) return;
       lastSpawn = now;
-      spawnBurst(event.clientX, event.clientY);
+      spawnBurst(event.clientX, event.clientY, 1.05);
     },
     { passive: true }
   );
@@ -612,8 +706,8 @@ function initBackgroundFireworks() {
       const p = particles[i];
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.02;
-      p.life -= 0.018;
+      p.vy += 0.018;
+      p.life -= 0.014;
       if (p.life <= 0) {
         particles.splice(i, 1);
         continue;
@@ -627,6 +721,7 @@ function initBackgroundFireworks() {
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
+  burstOnBlankAreas();
 }
 
 const model = createJourneyModel(tripPlan);

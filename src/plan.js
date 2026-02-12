@@ -45,7 +45,7 @@ export const tripPlan = {
       festival: '迎春启程',
       title: '上海 - 台州',
       drive: '约 380km / 4h50m',
-      sleep: '台州椒江区',
+      sleep: '锦江之星酒店(台州椒江宝龙城葭沚老街店)',
       mood: 'city',
       element: '红灯笼 + 启程红封',
       focus: '下午离沪，晚间住台州，控制首日疲劳',
