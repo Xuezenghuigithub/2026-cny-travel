@@ -423,20 +423,21 @@ async function initMiniMap(store) {
     map.add([start, end]);
 
     const cityOverlays = [];
+    const cityMarkers = new Map();
     const cityCoords = new Map();
     tripPlan.stops.forEach((stop, idx) => {
       const point = [stop.lng, stop.lat];
       if (!cityCoords.has(stop.name)) cityCoords.set(stop.name, point);
-      cityOverlays.push(
-        new AMap.CircleMarker({
-          center: point,
-          radius: idx === 0 || idx === tripPlan.stops.length - 1 ? 5.5 : 4.5,
-          strokeColor: '#ffffff',
-          strokeWeight: 1,
-          fillColor: idx === 0 || idx === tripPlan.stops.length - 1 ? '#f4b47b' : '#d85a4c',
-          fillOpacity: 0.95
-        })
-      );
+      const marker = new AMap.CircleMarker({
+        center: point,
+        radius: idx === 0 || idx === tripPlan.stops.length - 1 ? 5.5 : 4.5,
+        strokeColor: '#ffffff',
+        strokeWeight: 1,
+        fillColor: idx === 0 || idx === tripPlan.stops.length - 1 ? '#f4b47b' : '#d85a4c',
+        fillOpacity: 0.95
+      });
+      cityOverlays.push(marker);
+      if (!cityMarkers.has(stop.name)) cityMarkers.set(stop.name, marker);
       cityOverlays.push(
         new AMap.Text({
           text: stop.name,
@@ -455,6 +456,42 @@ async function initMiniMap(store) {
       );
     });
     map.add(cityOverlays);
+
+    const dayCityByIndex = [];
+    let currentCity = tripPlan.stops[0]?.name || '上海';
+    tripPlan.days.forEach((day) => {
+      const routePair = day.title.split('-').map((name) => name.trim());
+      if (routePair.length === 2 && cityMarkers.has(routePair[1])) {
+        currentCity = routePair[1];
+      } else if (cityMarkers.has(day.title.trim())) {
+        currentCity = day.title.trim();
+      }
+      dayCityByIndex.push(currentCity);
+    });
+
+    let activeCityName = '';
+    function setActiveCity(cityName) {
+      if (!cityName || !cityMarkers.has(cityName)) return;
+      if (activeCityName && cityMarkers.has(activeCityName)) {
+        cityMarkers.get(activeCityName).setOptions({
+          radius: activeCityName === '上海' ? 5.5 : 4.5,
+          fillColor: activeCityName === '上海' ? '#f4b47b' : '#d85a4c',
+          fillOpacity: 0.95
+        });
+      }
+
+      activeCityName = cityName;
+      cityMarkers.get(cityName).setOptions({
+        radius: 7.8,
+        fillColor: '#6ce6cb',
+        fillOpacity: 1
+      });
+
+      const point = cityCoords.get(cityName);
+      if (point) {
+        map.setCenter(point);
+      }
+    }
 
     const dayLabels = [];
     tripPlan.days.forEach((day) => {
@@ -539,7 +576,10 @@ async function initMiniMap(store) {
     store.subscribe((state) => {
       const pos = getRoutePosition(routePath, state.progress);
       cursor.setCenter(pos);
+      setActiveCity(dayCityByIndex[state.dayIndex] || dayCityByIndex[0]);
     });
+
+    setActiveCity(dayCityByIndex[0]);
   } catch (_error) {
     mapEl.classList.add('is-fallback');
     mapEl.innerHTML = `
@@ -561,6 +601,7 @@ function initBackgroundFireworks() {
 
   const particles = [];
   let lastSpawn = 0;
+  let nextAutoBurstAt = 0;
 
   function resize() {
     canvas.width = window.innerWidth;
@@ -605,6 +646,30 @@ function initBackgroundFireworks() {
         hue: 35 + Math.random() * 40
       });
     }
+  }
+
+  function randomBlankPoint() {
+    const rect = shell.getBoundingClientRect();
+    const pad = 36;
+    for (let i = 0; i < 20; i += 1) {
+      const x = Math.random() * window.innerWidth;
+      const y = Math.random() * window.innerHeight;
+      const inMain =
+        x >= rect.left - pad &&
+        x <= rect.right + pad &&
+        y >= rect.top - pad &&
+        y <= rect.bottom + pad;
+      if (!inMain) return { x, y };
+    }
+
+    // Fallback: corners when blank area is tight
+    const corners = [
+      { x: window.innerWidth * 0.08, y: window.innerHeight * 0.12 },
+      { x: window.innerWidth * 0.92, y: window.innerHeight * 0.15 },
+      { x: window.innerWidth * 0.12, y: window.innerHeight * 0.88 },
+      { x: window.innerWidth * 0.9, y: window.innerHeight * 0.84 }
+    ];
+    return corners[Math.floor(Math.random() * corners.length)];
   }
 
   function burstOnBlankAreas() {
@@ -701,6 +766,8 @@ function initBackgroundFireworks() {
   );
 
   function animate() {
+    const now = performance.now();
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = particles.length - 1; i >= 0; i -= 1) {
       const p = particles[i];
@@ -718,10 +785,19 @@ function initBackgroundFireworks() {
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    if (now >= nextAutoBurstAt) {
+      const point = randomBlankPoint();
+      const power = 0.55 + Math.random() * 1.55;
+      spawnBurst(point.x, point.y, power);
+      nextAutoBurstAt = now + 2200 + Math.random() * 4200;
+    }
+
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
   burstOnBlankAreas();
+  nextAutoBurstAt = performance.now() + 2600 + Math.random() * 2600;
 }
 
 const model = createJourneyModel(tripPlan);

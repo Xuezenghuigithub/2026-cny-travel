@@ -91,13 +91,39 @@ export function createStageCanvas(canvas, model, store) {
     ctx.fillStyle = palette.hillA;
     ctx.beginPath();
     ctx.moveTo(0, horizonY);
-    ctx.lineTo(width * 0.18, horizonY - 92);
-    ctx.lineTo(width * 0.34, horizonY - 18);
-    ctx.lineTo(width * 0.54, horizonY - 108);
-    ctx.lineTo(width * 0.78, horizonY - 20);
-    ctx.lineTo(width, horizonY - 70);
+    ctx.lineTo(width * 0.14, horizonY - 140);
+    ctx.lineTo(width * 0.26, horizonY - 66);
+    ctx.lineTo(width * 0.41, horizonY - 170);
+    ctx.lineTo(width * 0.56, horizonY - 74);
+    ctx.lineTo(width * 0.74, horizonY - 156);
+    ctx.lineTo(width * 0.86, horizonY - 82);
+    ctx.lineTo(width, horizonY - 124);
     ctx.lineTo(width, height);
     ctx.lineTo(0, height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Snow caps for distant mountain peaks.
+    ctx.fillStyle = 'rgba(245, 250, 255, 0.92)';
+    ctx.beginPath();
+    ctx.moveTo(width * 0.1, horizonY - 118);
+    ctx.lineTo(width * 0.14, horizonY - 140);
+    ctx.lineTo(width * 0.18, horizonY - 112);
+    ctx.lineTo(width * 0.15, horizonY - 108);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(width * 0.36, horizonY - 140);
+    ctx.lineTo(width * 0.41, horizonY - 170);
+    ctx.lineTo(width * 0.46, horizonY - 138);
+    ctx.lineTo(width * 0.42, horizonY - 132);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(width * 0.69, horizonY - 132);
+    ctx.lineTo(width * 0.74, horizonY - 156);
+    ctx.lineTo(width * 0.79, horizonY - 129);
+    ctx.lineTo(width * 0.75, horizonY - 124);
     ctx.closePath();
     ctx.fill();
 
@@ -215,8 +241,8 @@ export function createStageCanvas(canvas, model, store) {
   function drawCar(speed, drift) {
     const cx = width * 0.5 + drift * 0.8;
     const cy = height * 0.84 + Math.sin(performance.now() / 210) * (1 + speed * 0.42);
-    const carW = clamp(width * 0.27, 200, 308);
-    const carH = carW * 0.78;
+    const carW = clamp(width * 0.275, 210, 316);
+    const carH = carW * 0.62;
     const tilt = ((-2 + drift * 0.11) * Math.PI) / 180;
 
     ctx.save();
@@ -227,106 +253,193 @@ export function createStageCanvas(canvas, model, store) {
     const skidY = carH * 0.36;
     const tireGap = carW * 0.26;
     for (let i = 0; i < 2; i += 1) {
-      const side = i === 0 ? -1 : 1;
-      const x = side * tireGap;
-      ctx.strokeStyle = 'rgba(18, 14, 14, 0.34)';
-      ctx.lineWidth = 3;
+      const x = i === 0 ? -tireGap : tireGap;
+      const y0 = skidY + 6;
+      const y1 = skidY + 90;
+      const y2 = skidY + 206;
+      const sway = slip * 0.25;
+
+      const startX = x + 8;
+      const midX = x + carW * 0.33 + sway;
+      const endX = x + carW * 0.26 + sway * 0.7;
+
+      ctx.strokeStyle = 'rgba(245, 246, 250, 0.62)';
+      ctx.lineWidth = 3.8;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(x, skidY);
-      ctx.quadraticCurveTo(x + side * slip, skidY + 18, x + side * slip * 1.2, skidY + 58);
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(66, 48, 44, 0.18)';
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.moveTo(x + side * 4, skidY + 2);
-      ctx.quadraticCurveTo(x + side * (slip + 2), skidY + 22, x + side * (slip + 5), skidY + 56);
+      // Two identical S lines (same geometry), only translated horizontally.
+      ctx.moveTo(startX, y0);
+      ctx.bezierCurveTo(
+        x + carW * 0.18 + sway * 0.7,
+        skidY + 26,
+        x + carW * 0.38 + sway,
+        skidY + 60,
+        midX,
+        y1
+      );
+      ctx.bezierCurveTo(
+        x - carW * 0.06 + sway * 0.5,
+        skidY + 132,
+        x + carW * 0.16 + sway * 0.6,
+        skidY + 168,
+        endX,
+        y2
+      );
       ctx.stroke();
     }
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.30)';
     ctx.beginPath();
-    ctx.ellipse(0, carH * 0.46, carW * 0.39, 15, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, carH * 0.38, carW * 0.40, 13, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#10151d';
+    // Tires
+    ctx.fillStyle = '#151922';
     ctx.beginPath();
-    ctx.ellipse(-carW * 0.33, carH * 0.36, carW * 0.083, carH * 0.11, 0.1, 0, Math.PI * 2);
-    ctx.ellipse(carW * 0.33, carH * 0.36, carW * 0.083, carH * 0.11, -0.1, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#7f8ea4';
-    ctx.beginPath();
-    ctx.arc(-carW * 0.34, carH * 0.36, carW * 0.03, 0, Math.PI * 2);
-    ctx.arc(carW * 0.34, carH * 0.36, carW * 0.03, 0, Math.PI * 2);
+    ctx.roundRect(-carW * 0.39, carH * 0.23, carW * 0.10, carH * 0.20, 5);
+    ctx.roundRect(carW * 0.29, carH * 0.23, carW * 0.10, carH * 0.20, 5);
     ctx.fill();
 
-    const bodyGrad = ctx.createLinearGradient(0, -carH * 0.58, 0, carH * 0.44);
-    bodyGrad.addColorStop(0, '#74808d');
-    bodyGrad.addColorStop(0.32, '#202a35');
-    bodyGrad.addColorStop(1, '#090d14');
-
+    // Main body, poster-like rear view with flat trunk
+    const bodyGrad = ctx.createLinearGradient(0, -carH * 0.5, 0, carH * 0.35);
+    bodyGrad.addColorStop(0, '#4b5060');
+    bodyGrad.addColorStop(0.34, '#2f3343');
+    bodyGrad.addColorStop(1, '#252a38');
     ctx.fillStyle = bodyGrad;
     ctx.beginPath();
-    ctx.moveTo(-carW * 0.44, carH * 0.08);
-    ctx.bezierCurveTo(-carW * 0.45, -carH * 0.12, -carW * 0.32, -carH * 0.4, -carW * 0.08, -carH * 0.56);
-    ctx.lineTo(carW * 0.08, -carH * 0.56);
-    ctx.bezierCurveTo(carW * 0.32, -carH * 0.4, carW * 0.45, -carH * 0.12, carW * 0.44, carH * 0.08);
-    ctx.bezierCurveTo(carW * 0.43, carH * 0.23, carW * 0.34, carH * 0.34, carW * 0.22, carH * 0.4);
-    ctx.lineTo(-carW * 0.22, carH * 0.4);
-    ctx.bezierCurveTo(-carW * 0.34, carH * 0.34, -carW * 0.43, carH * 0.23, -carW * 0.44, carH * 0.08);
+    ctx.moveTo(-carW * 0.44, carH * 0.14);
+    ctx.lineTo(-carW * 0.44, -carH * 0.02);
+    ctx.quadraticCurveTo(-carW * 0.43, -carH * 0.27, -carW * 0.27, -carH * 0.46);
+    ctx.lineTo(carW * 0.27, -carH * 0.46);
+    ctx.quadraticCurveTo(carW * 0.43, -carH * 0.27, carW * 0.44, -carH * 0.02);
+    ctx.lineTo(carW * 0.44, carH * 0.14);
+    ctx.quadraticCurveTo(carW * 0.36, carH * 0.28, carW * 0.2, carH * 0.31);
+    ctx.lineTo(-carW * 0.2, carH * 0.31);
+    ctx.quadraticCurveTo(-carW * 0.36, carH * 0.28, -carW * 0.44, carH * 0.14);
     ctx.closePath();
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(10, 13, 18, 0.9)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(12, 14, 21, 0.88)';
+    ctx.lineWidth = 3.4;
     ctx.stroke();
 
-    const glassGrad = ctx.createLinearGradient(0, -carH * 0.54, 0, -carH * 0.2);
-    glassGrad.addColorStop(0, 'rgba(224,236,255,0.9)');
-    glassGrad.addColorStop(1, 'rgba(128,157,189,0.86)');
+    // Rear windshield
+    const glassGrad = ctx.createLinearGradient(0, -carH * 0.48, 0, -carH * 0.07);
+    glassGrad.addColorStop(0, '#e4e7eb');
+    glassGrad.addColorStop(1, '#6f8195');
     ctx.fillStyle = glassGrad;
     ctx.beginPath();
-    ctx.moveTo(-carW * 0.19, -carH * 0.14);
-    ctx.bezierCurveTo(-carW * 0.16, -carH * 0.32, -carW * 0.09, -carH * 0.48, 0, -carH * 0.5);
-    ctx.bezierCurveTo(carW * 0.09, -carH * 0.48, carW * 0.16, -carH * 0.32, carW * 0.19, -carH * 0.14);
+    ctx.moveTo(-carW * 0.265, -carH * 0.055);
+    ctx.quadraticCurveTo(-carW * 0.24, -carH * 0.28, -carW * 0.155, -carH * 0.44);
+    ctx.lineTo(carW * 0.155, -carH * 0.44);
+    ctx.quadraticCurveTo(carW * 0.24, -carH * 0.28, carW * 0.265, -carH * 0.055);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#121824';
-    ctx.fillRect(-carW * 0.21, carH * 0.03, carW * 0.42, carH * 0.14);
-    ctx.strokeStyle = 'rgba(145, 162, 187, 0.75)';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(-carW * 0.21, carH * 0.03, carW * 0.42, carH * 0.14);
-
-    ctx.strokeStyle = '#f16363';
-    ctx.lineWidth = 4.8;
-    ctx.lineCap = 'round';
+    // Windshield highlights
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
     ctx.beginPath();
-    ctx.moveTo(-carW * 0.39, carH * 0.1);
-    ctx.quadraticCurveTo(-carW * 0.31, carH * 0.04, -carW * 0.2, carH * 0.07);
-    ctx.moveTo(carW * 0.39, carH * 0.1);
-    ctx.quadraticCurveTo(carW * 0.31, carH * 0.04, carW * 0.2, carH * 0.07);
-    ctx.stroke();
-
-    ctx.fillStyle = '#0e141d';
+    ctx.moveTo(-carW * 0.23, -carH * 0.1);
+    ctx.lineTo(-carW * 0.16, -carH * 0.41);
+    ctx.lineTo(-carW * 0.1, -carH * 0.41);
+    ctx.lineTo(-carW * 0.18, -carH * 0.1);
+    ctx.closePath();
+    ctx.fill();
     ctx.beginPath();
-    ctx.roundRect(-carW * 0.3, carH * 0.26, carW * 0.16, carH * 0.12, 5);
-    ctx.roundRect(carW * 0.14, carH * 0.26, carW * 0.16, carH * 0.12, 5);
+    ctx.moveTo(carW * 0.22, -carH * 0.1);
+    ctx.lineTo(carW * 0.12, -carH * 0.41);
+    ctx.lineTo(carW * 0.19, -carH * 0.41);
+    ctx.lineTo(carW * 0.27, -carH * 0.1);
+    ctx.closePath();
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(212, 224, 241, 0.38)';
-    ctx.lineWidth = 1.4;
+    // Trunk break line + high mount brake light
+    ctx.strokeStyle = 'rgba(24, 28, 38, 0.9)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(-carW * 0.31, -carH * 0.06);
-    ctx.lineTo(-carW * 0.07, -carH * 0.35);
-    ctx.moveTo(carW * 0.31, -carH * 0.06);
-    ctx.lineTo(carW * 0.07, -carH * 0.35);
+    ctx.moveTo(-carW * 0.42, carH * 0.02);
+    ctx.lineTo(carW * 0.42, carH * 0.02);
+    ctx.stroke();
+    ctx.fillStyle = '#7f1225';
+    ctx.beginPath();
+    ctx.moveTo(-carW * 0.18, -carH * 0.015);
+    ctx.quadraticCurveTo(0, -carH * 0.055, carW * 0.18, -carH * 0.015);
+    ctx.quadraticCurveTo(0, 0, -carW * 0.18, -carH * 0.015);
+    ctx.closePath();
+    ctx.fill();
+
+    // Vertical tail lights
+    const tailGradL = ctx.createLinearGradient(-carW * 0.35, 0, -carW * 0.24, 0);
+    tailGradL.addColorStop(0, '#6f1929');
+    tailGradL.addColorStop(1, '#db3552');
+    ctx.fillStyle = tailGradL;
+    ctx.beginPath();
+    ctx.moveTo(-carW * 0.37, carH * 0.2);
+    ctx.lineTo(-carW * 0.37, carH * 0.01);
+    ctx.quadraticCurveTo(-carW * 0.35, -carH * 0.03, -carW * 0.3, -carH * 0.03);
+    ctx.quadraticCurveTo(-carW * 0.27, -carH * 0.02, -carW * 0.25, carH * 0.02);
+    ctx.lineTo(-carW * 0.25, carH * 0.2);
+    ctx.closePath();
+    ctx.fill();
+
+    const tailGradR = ctx.createLinearGradient(carW * 0.25, 0, carW * 0.37, 0);
+    tailGradR.addColorStop(0, '#db3552');
+    tailGradR.addColorStop(1, '#6f1929');
+    ctx.fillStyle = tailGradR;
+    ctx.beginPath();
+    ctx.moveTo(carW * 0.37, carH * 0.2);
+    ctx.lineTo(carW * 0.37, carH * 0.01);
+    ctx.quadraticCurveTo(carW * 0.35, -carH * 0.03, carW * 0.3, -carH * 0.03);
+    ctx.quadraticCurveTo(carW * 0.27, -carH * 0.02, carW * 0.25, carH * 0.02);
+    ctx.lineTo(carW * 0.25, carH * 0.2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Rear badge core (no white outer ring)
+    ctx.fillStyle = '#a91e31';
+    ctx.beginPath();
+    ctx.roundRect(-carW * 0.029, carH * 0.045, carW * 0.058, carH * 0.044, 4);
+    ctx.fill();
+
+    // Bumper
+    const bumperGrad = ctx.createLinearGradient(0, carH * 0.22, 0, carH * 0.44);
+    bumperGrad.addColorStop(0, '#2a2f3d');
+    bumperGrad.addColorStop(1, '#1e2330');
+    ctx.fillStyle = bumperGrad;
+    ctx.beginPath();
+    ctx.roundRect(-carW * 0.44, carH * 0.16, carW * 0.88, carH * 0.17, 9);
+    ctx.fill();
+
+    // Plate
+    ctx.fillStyle = '#f0f1f2';
+    ctx.strokeStyle = 'rgba(114, 122, 132, 0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(-carW * 0.12, carH * 0.205, carW * 0.24, carH * 0.105, 3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#222831';
+    ctx.font = `${Math.floor(carW * 0.037)}px "Noto Sans SC", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('苏U ZM245', 0, carH * 0.257);
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+
+    // Mirrors
+    ctx.fillStyle = '#2e3342';
+    ctx.strokeStyle = 'rgba(15, 18, 26, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(-carW * 0.56, -carH * 0.12, carW * 0.11, carH * 0.07, 4);
+    ctx.roundRect(carW * 0.45, -carH * 0.12, carW * 0.11, carH * 0.07, 4);
+    ctx.fill();
     ctx.stroke();
 
     if (logoImgLoaded) {
-      const logoW = carW * 0.18;
-      const logoH = logoW * 0.52;
-      ctx.drawImage(logoImg, -logoW * 0.5, carH * 0.1, logoW, logoH);
+      const logoW = carW * 0.08;
+      const logoH = logoW * 0.95;
+      ctx.drawImage(logoImg, -logoW * 0.5, carH * 0.028, logoW, logoH);
     }
 
     ctx.restore();
